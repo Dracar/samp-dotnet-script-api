@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<DotnetClient>
+  <config>
+    <Address>127.0.0.1</Address>
+    <Port>7780</Port>
+    <AuthKey>ChangeMe</AuthKey>
+  </config>
+</DotnetClient>
