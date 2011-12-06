@@ -2785,7 +2785,7 @@ public:
 
 #include <wchar.h>
 #include "ConvertUTF.h"
-
+                
 /**
  * Converts UTF-8 to a wchar_t (or equivalent) using the Unicode reference
  * library functions. This can be used on all platforms.

@@ -8,6 +8,7 @@
 using System;
 using Samp.Scripts;
 using Samp.API;
+using Samp.Util;
 
 namespace Samp.Scripts.ExampleScripts
 {
@@ -25,8 +26,8 @@ namespace Samp.Scripts.ExampleScripts
 
         public void OnPlayerCommandText(object sender, Player.OnPlayerCommandTextEventArgs args)
         {
-            string[] cmd = args.text.Split(' ');
-            if (String.Compare(cmd[0], "/car") == 0)
+			string[] cmd = args.text.Split(' ');
+            if (Samp.Util.Util.strcmp(cmd[0], "/car") == 0)
             {
                 SpawnPlayerCar(args.player);
             }
