@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2CB2AF0F-F790-49C0-8C84-5D5E38138758}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DotnetClient</RootNamespace>
+    <AssemblyName>DotnetClient</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="API\APIMain.cs" />
+    <Compile Include="API\Dialogue.cs" />
+    <Compile Include="API\GameObject.cs" />
+    <Compile Include="API\Menu.cs" />
+    <Compile Include="API\Player.cs" />
+    <Compile Include="API\ScriptManager.cs" />
+    <Compile Include="API\Vector3.cs" />
+    <Compile Include="API\Vehicle.cs" />
+    <Compile Include="API\World.cs" />
+    <Compile Include="Client\CallbackProcessor.cs" />
+    <Compile Include="Client\Client.cs" />
+    <Compile Include="Client\DataStream.cs" />
+    <Compile Include="Client\InternalEvents.cs" />
+    <Compile Include="Client\NativeFunctionRequestor.cs" />
+    <Compile Include="Client\Packet.cs" />
+    <Compile Include="Client\PacketBuilder.cs" />
+    <Compile Include="Client\PacketProcessor.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Client\Server.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scripts\ScriptBase.cs" />
+    <Compile Include="Util\Databse.cs" />
+    <Compile Include="Util\DB_XML.cs" />
+    <Compile Include="Util\Log.cs" />
+    <Compile Include="Util\ParamCodeGen.cs" />
+    <Compile Include="Util\Util.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DotnetClient.xml" />
+    <Content Include="License.txt" />
+    <Content Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PreBuildEvent>copy "C:\Projects\SampDotnetScriptAPI\DotnetClient\DotnetClient.xml" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Debug\"
+copy "C:\Projects\SampDotnetScriptAPI\DotnetClient\DotnetClient.xml" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"
+copy "C:\Projects\SampDotnetScriptAPI\DotnetClient\ReadMe.txt" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"
+copy "C:\Projects\SampDotnetScriptAPI\DotnetClient\License.txt" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"</PreBuildEvent>
+  </PropertyGroup>
+</Project>
