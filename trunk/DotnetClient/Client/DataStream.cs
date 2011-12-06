@@ -190,7 +190,9 @@ namespace Samp.Client
                 b[i] = Data[Pos + i];
             }
             Pos += strlen;
-            return ByteArraytoStr(b);
+			string ret = ByteArraytoStr(b);
+			ret = ret.Trim('\0'); // monos String.Compare() function was giving me issue with the null char (which .net would ignore)
+            return ret;
         }
 
 

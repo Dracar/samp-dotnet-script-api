@@ -145,7 +145,7 @@ namespace Samp.API
             // input params for the compiler
             CompilerParameters compilerParams = new CompilerParameters();
             //compilerParams.OutputAssembly = csfile+".dll";
-            compilerParams.ReferencedAssemblies.Add("system.dll");
+            //compilerParams.ReferencedAssemblies.Add("system.dll");
 
             string asmloc = Assembly.GetExecutingAssembly().Location;
             asmloc = asmloc.Substring(0, asmloc.LastIndexOf("\\") + 1); // todo: fix for linux

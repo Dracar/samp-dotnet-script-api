@@ -62,6 +62,7 @@ namespace Samp
                     else API.APIMain.Init();
                 }
                 System.Threading.Thread.Sleep(1000);
+				//client.PakSender.SendTest(server);
             }
         }
     }

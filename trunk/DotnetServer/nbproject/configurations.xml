@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="79">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <logicalFolder name="f1" displayName="SDK" projectFiles="true">
+        <logicalFolder name="f1" displayName="amx" projectFiles="true">
+          <itemPath>SDK/amx/amx.h</itemPath>
+          <itemPath>SDK/amx/sclinux.h</itemPath>
+        </logicalFolder>
+        <itemPath>SDK/plugincommon.h</itemPath>
+      </logicalFolder>
+      <itemPath>Client.h</itemPath>
+      <itemPath>ConvertUTF.h</itemPath>
+      <itemPath>DataStream.h</itemPath>
+      <itemPath>Log.h</itemPath>
+      <itemPath>NativeFunctionProcessor.h</itemPath>
+      <itemPath>Packet.h</itemPath>
+      <itemPath>PacketBuilder.h</itemPath>
+      <itemPath>PacketProcessor.h</itemPath>
+      <itemPath>Server.h</itemPath>
+      <itemPath>SimpleIni.h</itemPath>
+      <itemPath>main.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="f1" displayName="SDK" projectFiles="true">
+        <itemPath>SDK/amxplugin.cpp</itemPath>
+      </logicalFolder>
+      <itemPath>ConvertUTF.c</itemPath>
+      <itemPath>Log.cpp</itemPath>
+      <itemPath>NativeFunctionProcessor.cpp</itemPath>
+      <itemPath>PacketBuilder.cpp</itemPath>
+      <itemPath>PacketProcessor.cpp</itemPath>
+      <itemPath>Server.cpp</itemPath>
+      <itemPath>main.cpp</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+    <itemPath>DotnetServer.ini</itemPath>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>../DotnetServer2</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <compileType>
+      </compileType>
+    </conf>
+    <conf name="Release" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>

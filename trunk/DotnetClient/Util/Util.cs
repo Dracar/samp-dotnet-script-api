@@ -49,6 +49,15 @@ namespace Samp.Util
             string ret = path.Substring(last, path.Length - last);
             return ret;
         }
+		
+		public static int strcmp(string str1, string str2)
+		{ 
+			// mono doesnt like the \0 on the end of one string but not other & returns 1 
+			// which while correct, is not what .net gives back. So ill just trim them.
+			str1 = str1.Trim('\0');	
+			str2 = str2.Trim('\0');	
+			return String.Compare(str1,str2);
+		}
     }
 
     public class RefType<T> where T : struct

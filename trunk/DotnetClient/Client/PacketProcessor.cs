@@ -99,7 +99,7 @@ namespace Samp.Client
                 Log.Debug(pak.ReadString());
 
             }
-           
+          // Log.Debug("paklen: "+pak.Data.Length);
             pak.Pos = 0;
             InternalEvents.FireOnPacketReceived(this,new OnPacketReceivedEventArgs(server,_Client,pak));
 

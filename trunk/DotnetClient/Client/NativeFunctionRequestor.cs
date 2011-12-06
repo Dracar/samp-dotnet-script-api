@@ -43,7 +43,6 @@ namespace Samp.Client
         public int Response;
 	    public string Name;
 	    public string Args;
-	    //public string vars;
 	    public DataStream Data;
 	    public NativeFunction()
 	    {
@@ -96,7 +95,15 @@ namespace Samp.Client
             NativeFunctionRequestor fr = new NativeFunctionRequestor(Client.Instance);
             func = fr.RequestFunction(Server.Instance, func);
             if (func == null) { Log.Warning("Function request " + name + " failed."); return 0; }
-
+			func.Data.Pos = 0;
+			/*string dat = "data: ";
+			for (int i=0;i<func.Data.Length;i++)
+			{
+				dat += func.Data.Data[i].ToString() + " ";
+			}
+			Log.Debug(dat);
+			func.Data.Pos = 0;*/
+			
             byte[] argsb = Encoding.ASCII.GetBytes(args);
             for (int i = 0; i < args.Length; i++)
             {
@@ -110,7 +117,7 @@ namespace Samp.Client
                 else if (argsb[i] == 'p')
                 {
                     if (data[i] is string) data[i] = func.Data.ReadString();
-                    else if (data[i] is StringRef) { ((StringRef)data[i]).Value = func.Data.ReadString(); }
+                    else if (data[i] is StringRef) { ((StringRef)data[i]).Value = func.Data.ReadString();}
                 }
             }
             return func.Response;
@@ -131,7 +138,6 @@ namespace Samp.Client
             request = function;
             response = null;
             function.Guid = System.Guid.NewGuid().ToString();
-            //Log.Debug("Sending function request: " + function.name);
 
             InternalEvents.OnPacketReceived += OnPacketReceived;
 
@@ -156,21 +162,21 @@ namespace Samp.Client
 
         public void OnPacketReceived(object sender, OnPacketReceivedEventArgs args)
         {
-            
             if (request == null) return; // not awaiting request
             if (response != null) return; // already received a reply
             if ((Packet.Opcodes)args.Pak.Opcode != Packet.Opcodes.FunctionReply) return; // wrong packet opcode
             args.Pak.Pos = 0;
             string guid = args.Pak.ReadString();
-            if (System.String.Compare(guid,request.Guid) != 0) return; // wrong function reply
+            if (String.Compare(guid,request.Guid) != 0) return; // wrong function reply
             NativeFunction ret = new NativeFunction();
             ret.Guid = guid;
             ret.Name = args.Pak.ReadString();
             ret.Response = args.Pak.ReadInt32();
             ret.Args = args.Pak.ReadString();
             int datalength = args.Pak.Length - args.Pak.Pos;
+			//Log.Debug("Good function reply received: " + ret.Name + " / " + ret.Response + " / " + ret.Args + " / " + args.Pak.Length + " / " + args.Pak.Pos + " / " + datalength);
+            
             ret.Data.AddData(args.Pak.ReadData(datalength),datalength);
-            //Log.Debug("Good function reply received: " + ret.name);
             response = ret;
         }
 
