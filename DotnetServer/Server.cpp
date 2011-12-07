@@ -21,7 +21,7 @@
     You may not remove this license text from the source files.
  
     Attribution Information
-        Attribution Copyright Notice: Copyright 2011, Iain Gilbert
+        Attribution Copyright Notice: 
         Attribution Phrase (not exceeding 10 words): Samp Dotnet Script API
         Attribution URL: http://code.google.com/p/samp-dotnet-script-api/
  

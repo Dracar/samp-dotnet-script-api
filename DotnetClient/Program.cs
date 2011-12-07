@@ -23,7 +23,7 @@
     You may not remove this license text from the source files.
  
     Attribution Information
-        Attribution Copyright Notice: Copyright 2011, Iain Gilbert
+        Attribution Copyright Notice:
         Attribution Phrase (not exceeding 10 words): Samp Dotnet Script API
         Attribution URL: http://code.google.com/p/samp-dotnet-script-api/
  
@@ -45,11 +45,13 @@ namespace Samp
     {
         private const string Name = "Samp Dotnet Script API";
         private const string Version = "0.0.1.0";
+        private const string Website = "http://code.google.com/p/samp-dotnet-script-api/";
         static void Main(string[] args)
         {
             Log l = new Log("SampClient", true);
             Log.Message(Name + " " + Version);
-            Log.Message("Copyright 2011, Iain Gilbert");
+            Log.Message(Website);
+
             Client.Client client = new Client.Client();
             Server server = new Server();
             while (true)
