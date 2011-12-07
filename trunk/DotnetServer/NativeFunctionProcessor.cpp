@@ -22,7 +22,7 @@
     You may not remove this license text from the source files.
  
     Attribution Information
-        Attribution Copyright Notice: Copyright 2011, Iain Gilbert
+        Attribution Copyright Notice: 
         Attribution Phrase (not exceeding 10 words): Samp Dotnet Script API
         Attribution URL: http://code.google.com/p/samp-dotnet-script-api/
  
@@ -42,7 +42,7 @@
 
 struct sNativeFunction
 {
-	int id;
+	int id; // id is not used, but i went to all the effort of manualy typing them in. soooo... fuck it, i'll leave them for now
 	char* Name;
 	char* Args;
 	amx_function_t func;
@@ -77,11 +77,11 @@ sNativeFunction NativeFunctions[] =
 	{24,"AllowAdminTeleport",					"i" , NULL },
 	{25,"SetDeathDropAmount",					"i" , NULL },
 	{26,"CreateExplosion",						"fffif" , NULL },
-	{27,"SetDisabledWeapons",					"" , NULL },
+	//{27,"SetDisabledWeapons",					"" , NULL },
 	{28,"EnableZoneNames",						"i" , NULL },
 	{29,"IsPlayerAdmin",						"i" , NULL },
 	{30,"Kick",								"i" , NULL },
-	{31,"BanEx",								"is" , NULL },
+	//{31,"BanEx",								"is" , NULL },
 	{32,"Ban",									"i" , NULL },
 	{33,"SendRconCommand",						"s" , NULL },
 
@@ -317,9 +317,9 @@ bool NativeFunctionProcessor::AddFunctionRequestToQue(FunctionRequest* func)
 	{
 		Log::Warning("Function request que is full! Attempting to wait for que to empty.");
 		int i=0;
-		while (FunctionRequestQue[MAX_FUNCTIONREQUESTQUE-1] != NULL && i < 10)
+		while (FunctionRequestQue[MAX_FUNCTIONREQUESTQUE-1] != NULL && i < 100)
 		{
-			SLEEP(10);
+			SLEEP(1);
 			i++;
 		}
 	}
@@ -367,19 +367,18 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 	if (!request) return NULL;
 	request->data->pos = 0;
 
-	char* paramsstr;
 	amx_function_t amxFunc = NULL;
 	sNativeFunction* sfunc = GetNativeByName(request->name);
 	if (sfunc != NULL) 
 	{
 		amxFunc = sfunc->func;
-		paramsstr = sfunc->Args;
+		memcpy(request->params,sfunc->Args,strlen(sfunc->Args)+1);
 	}
 	else 
 	{
 		logprintf("Searching for AMX function: %s.",request->name);
 		amxFunc = FindFunction(request->name);
-		paramsstr = request->params;
+		logprintf("Debug: params: %s, %d.",request->params,strlen(request->params));
 	}
 	
 	if (amxFunc == NULL)
@@ -390,24 +389,24 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 
 
 
-	cell* args = (cell*)calloc(strlen(paramsstr)+1,4);
+	cell* args = (cell*)calloc(strlen(request->params)+1,4);
 	cell *phys_addr[10]; // 6
-	args[0] = 4 * strlen(paramsstr);
+	args[0] = 4 * strlen(request->params);
 	int vars = 0;
 
-	for (unsigned int i=0;i<strlen(paramsstr);i++)
+	for (unsigned int i=0;i<strlen(request->params);i++)
 	{
-		if (paramsstr[i] == 'i') 
+		if (request->params[i] == 'i') 
 		{
 			int q = request->data->ReadInt32();
 			args[i+1] = q;
 		} 
-		else if (paramsstr[i] == 'f') 
+		else if (request->params[i] == 'f') 
 		{
 			float f = request->data->ReadFloat32();
 			args[i+1] = amx_ftoc(f);
 		}
-		else if (paramsstr[i] == 's') 
+		else if (request->params[i] == 's') 
 		{
 			unsigned short slen = request->data->ReadUShort();
 			request->data->pos -= 2;
@@ -420,8 +419,8 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 		}
 		else 
 		{
-			if (paramsstr[i] == 'v') amx_Allot(__gpAMX, 1, args + i+1, &phys_addr[vars++]); 
-			if (paramsstr[i] == 'p') amx_Allot(__gpAMX, 1, args + i+1, &phys_addr[vars++]); 
+			if (request->params[i] == 'v') amx_Allot(__gpAMX, 1, args + i+1, &phys_addr[vars++]); 
+			if (request->params[i] == 'p') amx_Allot(__gpAMX, 1, args + i+1, &phys_addr[vars++]); 
 		}
 	}
 	
@@ -430,23 +429,20 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 	
 	request->data->pos = 0;
 	request->data->Length = 0;
-	free(request->params);
-	request->params = (char*)calloc(strlen(paramsstr+1),1);
-	memcpy(request->params,paramsstr,strlen(paramsstr+1));
 	vars = 0;
-	for (unsigned int i=0;i<strlen(paramsstr);i++)
+	for (unsigned int i=0;i<strlen(request->params);i++)
 	{
-		if (paramsstr[i] == 'v') request->data->AddInt32(*phys_addr[vars]);
+		if (request->params[i] == 'v') request->data->AddInt32(*phys_addr[vars]);
 
-		if (paramsstr[i] == 'p')
+		if (request->params[i] == 'p')
 		{
 			char* str = (char*)calloc(32,1);
-			amx_GetString(str, phys_addr[vars], 0, 32);
+			amx_GetString(str, phys_addr[vars], 0, 32); // todo: string length greater than 32
 			request->data->AddString(str);
 			free(str);
 		}
 
-		if ((paramsstr[i] == 's') || (paramsstr[i] == 'v') || (paramsstr[i] == 'p')) 
+		if ((request->params[i] == 's') || (request->params[i] == 'v') || (request->params[i] == 'p')) 
 		{ 
 			vars++; 
 			amx_Release(__gpAMX, args[i+1]);
@@ -456,11 +452,6 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 	free(args);
 	//free(phys_addr);
 	request->data->pos = 0;
-        
-        /*char* qq = (char*)malloc(127);
-        sprintf(qq,"requestsize: %d",request->data->Length);
-        Log::Debug(qq);
-        free(qq);*/
         
 	return request;
 }

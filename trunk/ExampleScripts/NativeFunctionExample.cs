@@ -57,7 +57,7 @@ namespace Samp.Scripts.ExampleScripts
             Samp.Util.FloatRef x = 0.0F, y = 0.0F, z = 0.0F, angle = 0.0F; // must use FloatRef class to return floats from native function, same goes for StringRef & IntRef
             Samp.Client.NativeFunctionRequestor.RequestFunction("GetPlayerPos", playerid, x, y, z);
             NativeFunctionRequestor.RequestFunction("GetPlayerFacingAngle", playerid, angle);
-            int vehicleid = NativeFunctionRequestor.RequestFunction("CreateVehicle", model, x, y, z, angle, 0, 0, 300);
+            int vehicleid = NativeFunctionRequestor.RequestFunction("CreateVehicle", model, x.Value, y.Value, z.Value, angle.Value, 0, 0, 300);// note that we use x.Value now
             NativeFunctionRequestor.RequestFunction("PutPlayerInVehicle", playerid,vehicleid,0);
             NativeFunctionRequestor.RequestFunction("SendClientMessage", playerid, 0,"{00FF00}Vehicle Spawned.");
 
