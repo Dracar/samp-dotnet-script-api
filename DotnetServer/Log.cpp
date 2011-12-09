@@ -36,12 +36,12 @@
 
 logprintf_t logprintf;
 
-void Log::Line(char* line) {logprintf("DotnetHook: %s",line);}
+void Log::Line(char* line) {logprintf("DotnetServer: %s",line);}
 	void Log::Debug(char* line) 
 	{
 #ifndef _DEBUG
 		return;
 #endif
-		logprintf("DotnetHook Debug: %s",line);
+		logprintf("DotnetServer Debug: %s",line);
 	}
-	void Log::Warning(char* line) {logprintf("DotnetHook Warning: %s",line);}
+	void Log::Warning(char* line) {logprintf("!DotnetServer Warning!: %s",line);}

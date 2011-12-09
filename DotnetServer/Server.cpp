@@ -102,21 +102,25 @@ Client* Server::NewClient(SOCKET clientsock, sockaddr_in clientaddress)
 	return Clients[clientid];
 }
 
+
+
 bool Server::RemoveClient(Client* client)
 {
-	Log::Line("Removing client.");
+	if (client == NULL) return false;
+	logprintf("Client (%d - %s) disconnected.",client->ID,inet_ntoa(client->Address.sin_addr));
 	for (int i=0;i<MAX_CLIENTS;i++) 
 	{ 
 		if (Clients[i] == client) 
 		{
 			client->IsConnected = false;
+			SLEEP(10); // give other client threads time to exit :/
 			shutdown(client->Socket, 2);
 #if defined(_WIN32)
 			closesocket(client->Socket);
 #else
-                        close(client->Socket);
+            close(client->Socket);
 #endif
-			SLEEP(200);
+			SLEEP(10);
 			delete(Clients[i]); 
 			Clients[i] = NULL;
 			return true;
@@ -165,6 +169,13 @@ bool Server::Bind()
             return false;
         }
 
+#ifndef _WIN32
+		/* Enable address reuse */
+		int on = 1;
+		int ret = setsockopt( Socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on) );
+
+		signal(SIGPIPE,SIG_IGN); // ignore sigpipe errors
+#endif
 
 		memset(&Address, 0,sizeof(Address)); // zero
 		Address.sin_family = AF_INET;
@@ -174,8 +185,12 @@ bool Server::Bind()
 		if(bind(Socket, (LPSOCKADDR)&Address, sizeof(Address)) == SOCKET_ERROR)
 		{
 			Log::Warning("Server Bind Failed 3");
+			
 #if defined(_WIN32)
+			closesocket(Socket);
             WSACleanup();
+#else
+			close(Socket);
 #endif
             return false;
         }
@@ -195,11 +210,22 @@ void Server::WaitConnect()
 	Log::Debug("WaitConnect");
 	while (Online)
 	{
-
-		while(listen(Socket, 20) == SOCKET_ERROR)
+		int l = 0;
+		while(l = listen(Socket, 20) == SOCKET_ERROR)
 		{
 			SLEEP(10);
 		}
+		if (l == -1)
+		{
+			Log::Warning("Server Listen Failed");
+#if defined(_WIN32)
+			closesocket(Socket);
+            WSACleanup();
+#else
+			close(Socket);
+#endif
+            return;
+        }
 		SOCKET clientsock;
 		sockaddr_in clientaddress;
 #if defined(_WIN32)
@@ -211,19 +237,13 @@ void Server::WaitConnect()
 		if (clientsock == INVALID_SOCKET) {Log::Warning("Invalid Socket for client."); continue;}
 
 		Client* client = NewClient(clientsock,clientaddress);
-
-		char* msg = (char*)calloc(255,1);
-                //sprintf(msg,"Client connected");
-		sprintf(msg,"New client(%d) connected: %s",client->ID,inet_ntoa(clientaddress.sin_addr));
-		Log::Line(msg);
-		free(msg);
-
+		logprintf("Client (%d - %s) connected.",client->ID,inet_ntoa(client->Address.sin_addr));
 
 		ServerThreadStartStruct* stss = new ServerThreadStartStruct(this,client);
 		CreateThreadP(&ServerWaitReceiveThreadStart,stss);
 		CreateThreadP(&ServerWaitSendThreadStart,stss);
 		CreateThreadP(&ServerPingerThreadStart,stss);
-                delete(stss);
+        delete(stss);
 		
 	}
 	Log::Debug("WaitConnectEND");
@@ -237,12 +257,13 @@ void Server::WaitReceive(Client* client)
 	while (client != NULL && Online && client->IsConnected)
 	{
 		length = recv(client->Socket, buf, Client::MAX_BUFF, 0);
-		if(length < 1)
+		if (length <= 0) { Log::Debug("Receive thread error.");  RemoveClient(client); free(buf); return;}
+		/*if(length < 1)
 		{
 			memset(buf, 0, Client::MAX_BUFF); //todo: remove this
 			SLEEP(1);
 			continue;
-		}
+		}*/
 		Packet* pak = new Packet();
 		memcpy(&pak->Length,buf,2);
 		pak->Opcode = buf[2];
@@ -256,6 +277,7 @@ void Server::WaitReceive(Client* client)
 		SLEEP(1);
 	}
 	free(buf);
+	Log::Debug("Receive thread exiting."); 
 }
 
 void Server::WaitSend(Client* client)
@@ -275,7 +297,9 @@ void Server::WaitSend(Client* client)
 				char* buf = (char*)calloc(size,1);
 				for (int i=0;i<size;i++){buf[i] = client->sendbuf[bufpos+i];} // copy the data
 
-				int iRet = send(client->Socket, buf, size, 0); // send data
+				int iRet = send(client->Socket, buf, size, MSG_NOSIGNAL); // send data // todo: check for SIGPIPE error
+				if (iRet == -1) {Log::Debug("Send thread error.");  free(buf); RemoveClient(client); return;}
+
 				bufpos += size; // next packet
 				free(buf);
 			}
@@ -285,6 +309,7 @@ void Server::WaitSend(Client* client)
 		}
 		SLEEP(1); 
 	}
+	Log::Debug("Send thread exiting."); 
 }
 
 void Server::SendPacket(Client* client,Packet* packet)
@@ -309,9 +334,10 @@ void Server::SendPacket(Client* client,Packet* packet)
 
 void Server::Close()
 {
-	Log::Warning("Server Closing");
+	Log::Line("Server Closing");
 	for (int i=0;i<MAX_CLIENTS;i++) {if (Clients[i] != NULL) RemoveClient(Clients[i]);}
 	Online = false;
+	SLEEP(10);
 #if defined(_WIN32)
 	WSACleanup();
 #else
@@ -320,22 +346,37 @@ void Server::Close()
 }
 
 
+bool Server::ClientExists(Client* client)
+{
+	if (client == NULL) return false;
+	for (int i=0;i<MAX_CLIENTS;i++) 
+	{ 
+		if (Clients[i] == client) return true;
+	}
+	return false;
+}
+
 void Server::Pinger(Client* client)
 {
-	while (Online)
-	{
+	while (Online && client->IsConnected)
+	{ 
 		if (client->Timeout >= Client::PING_INTERVAL)
 		{
 			PakSender->SendPingRequest(client);
 		}
-		if (client->Timeout >= Client::MAX_TIMEOUT)
+		if (client->Timeout >= Client::MAX_TIMEOUT) 
 		{
-                    Log::Debug("Ping timeout");
+            Log::Debug("Ping timeout");
 			RemoveClient(client);
 			return;
 		}
 		client->Timeout += 1;
-		SLEEP(1000);
+		for (int i=0;i<1000;i+=5)
+		{
+			if (!Online || client->IsConnected == false) {Log::Debug("Ping thread exiting."); return;}
+			SLEEP(5);
+		}
 	}
+	Log::Debug("Ping thread exiting."); 
 }
 

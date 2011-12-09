@@ -26,7 +26,7 @@
         Attribution Phrase (not exceeding 10 words): Samp Dotnet Script API
         Attribution URL: http://code.google.com/p/samp-dotnet-script-api/
  
-    Display of Attribution Information to the end user is not required on server login, or at any time the end user is connected to your server.
+    Display of Attribution Information to the end user is not required on server connection, or at any time the end user is connected to your server.
     You must treat any External Deployment by You of the Original Code or Modifications as a distribution under section 3.1 and make Source Code available under Section 3.2.
     Display of Attribution Information is not required in Larger Works which are defined in the CPAL as a work which combines Covered Code or portions thereof with code not governed by the terms of the CPAL.
  */
@@ -42,7 +42,7 @@
 
 struct sNativeFunction
 {
-	int id; // id is not used, but i went to all the effort of manualy typing them in. soooo... fuck it, i'll leave them for now
+	int id;
 	char* Name;
 	char* Args;
 	amx_function_t func;
@@ -315,7 +315,7 @@ bool NativeFunctionProcessor::AddFunctionRequestToQue(FunctionRequest* func)
 {
 	if (FunctionRequestQue[MAX_FUNCTIONREQUESTQUE-1] != NULL) 
 	{
-		Log::Warning("Function request que is full! Attempting to wait for que to empty.");
+		Log::Warning("Function request que is full! Waiting for que to empty.");
 		int i=0;
 		while (FunctionRequestQue[MAX_FUNCTIONREQUESTQUE-1] != NULL && i < 100)
 		{
@@ -336,7 +336,7 @@ bool NativeFunctionProcessor::AddFunctionRequestToQue(FunctionRequest* func)
 		}
 	}
 	functionrequestquelock = false;
-	Log::Warning("Function request que is full! Dropping function request.");
+	Log::Warning("Function request que is still full! Dropping function request.");
 	return false;
 }
 
@@ -378,7 +378,7 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 	{
 		logprintf("Searching for AMX function: %s.",request->name);
 		amxFunc = FindFunction(request->name);
-		logprintf("Debug: params: %s, %d.",request->params,strlen(request->params));
+		//logprintf("Debug: params: %s, %d.",request->params,strlen(request->params));
 	}
 	
 	if (amxFunc == NULL)

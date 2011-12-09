@@ -80,15 +80,15 @@ namespace Samp.API
             return result;
         }
 
+
         public Vector3 GetOffset2D(float rotation,float distance)
         {
             float x = this.X;
             float y = this.Y;
-            //GetPlayerPos(playerid, x, y, Angle);
-            //GetPlayerFacingAngle(playerid, Angle);
             x += (float)(distance * Math.Sin(rotation * (Math.PI/180))* -1);
             y += (float)(distance * Math.Cos(rotation * (Math.PI / 180)));
             return new Vector3(x, y, this.Z);
         }
+
     }
 }

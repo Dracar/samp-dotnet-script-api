@@ -1,5 +1,10 @@
 ﻿
 /*
+ * Iain gilbert
+ * 2009-2011
+*/
+
+/*
     The contents of this file are subject to the Common Public Attribution License Version 1.0 (the “License”); you may not use this file except in compliance with the License. 
     You may obtain a copy of the License at http://www.opensource.org/licenses/cpal_1.0 
     The License is based on the Mozilla Public License Version 1.1 but Sections 14 and 15 have been added to cover use of software over a computer network and provide for limited attribution for the Original Developer. 
@@ -59,7 +64,7 @@ namespace Samp.API
 
 
         public static ScriptManager Instance;
-        public static string CoreAsmLocation; // location of WiimoteScript main assembly
+        public static string CoreAsmLocation; // location of main assembly
         public string GameDirectory; // directory that coreasm is loaded from
         public string ScriptFileDirectory; // directory to search in for scripts (/scripts)
         public string[] ScriptFilePattern; // filename patter to search for scripts (*.Net.dll)
@@ -89,7 +94,7 @@ namespace Samp.API
 
             FindScriptAssemblies();
         }
-        public int FindScriptAssemblies()
+        private int FindScriptAssemblies()
         { // searches scripts directory for files to load
             //try
             int count = 0;
@@ -133,16 +138,14 @@ namespace Samp.API
             return count;
         }
 
-        public Assembly CompileScript(string csfile)
+        private Assembly CompileScript(string csfile)
         {
             Log.Message("Compiling file: " + Util.Util.GetFilenameFromPath(csfile));
-            CodeDomProvider csCompiler = null;// = new CSharpCodeProvider();
-            if (csfile.Contains(".vb")) csCompiler = new VBCodeProvider(); // todo: fix
+            CodeDomProvider csCompiler;
+            if (csfile.Contains(".vb")) csCompiler = new VBCodeProvider(); 
             else csCompiler = new CSharpCodeProvider();
             //CSharpCodeProvider csCompiler = new CSharpCodeProvider();
             //ICodeCompiler iCodeCompiler = csCompiler.CreateCompiler();
-
-            // input params for the compiler
             CompilerParameters compilerParams = new CompilerParameters();
             //compilerParams.OutputAssembly = csfile+".dll";
             //compilerParams.ReferencedAssemblies.Add("system.dll");
@@ -151,9 +154,6 @@ namespace Samp.API
             asmloc = asmloc.Substring(0, asmloc.LastIndexOf("\\") + 1); // todo: fix for linux
             Log.Debug(asmloc, this);
             compilerParams.ReferencedAssemblies.Add(asmloc + "DotnetClient.exe");
-            //compilerParams.ReferencedAssemblies.Add(asmloc + "WiimoteScript.exe");
-            //compilerParams.ReferencedAssemblies.Add(asmloc + "WiimoteLib.dll");
-            //compilerParams.ReferencedAssemblies.Add(asmloc + "PPJoyWrapper.dll");
 
             // generate the DLL
             compilerParams.GenerateExecutable = false;
@@ -180,7 +180,7 @@ namespace Samp.API
             return result.CompiledAssembly;
         }
 
-        public int FindScriptsInAssembly(string assemblypath)
+        private int FindScriptsInAssembly(string assemblypath)
         { // Find all of Script classes in DLL file
 
 
@@ -261,7 +261,7 @@ namespace Samp.API
             }
             return count;
         }
-        public ScriptBase RegisterScript(Type scriptclass)
+        private ScriptBase RegisterScript(Type scriptclass)
         { // register the script, create instance
             try
             {
