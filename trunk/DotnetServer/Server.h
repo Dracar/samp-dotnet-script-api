@@ -94,6 +94,7 @@ public:
 		void WaitSend(Client* client); // blocks, sends when sendbuf has data
 		void SendPacket(Client* client,Packet* packet); // adds packet to sendbuf for client, if client is null then it will send to all clients
 		void Pinger(Client* client);
+		bool ClientExists(Client* client);
 
 		void SampProcessTick(); // called by samp thread, all native calls will be made here
 

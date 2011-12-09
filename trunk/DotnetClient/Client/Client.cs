@@ -95,7 +95,11 @@ namespace Samp.Client
             server.LastPacketReceived = DateTime.Now;
             while (server.IsConnected)
             {
-                Thread.Sleep(1000);
+                for (int i=0;i<1000;i+=5)
+                {
+                    if (!server.IsConnected) return;
+                    Thread.Sleep(5);
+                }
                  TimeSpan span = server.LastPacketReceived.Subtract ( DateTime.Now );
                 if (span.TotalSeconds <= 30) continue;
                 Disconnect(server);
@@ -109,6 +113,7 @@ namespace Samp.Client
             server.IsAuthenticated = false;
             server.IsConnected = false;
             Thread.Sleep(100);
+            _Socket.Close();
             return true;
         }
 
@@ -127,7 +132,7 @@ namespace Samp.Client
                 catch (Exception ex)
                 {
                     Log.Warning("Server closed connection.");
-                    server.IsConnected = false;
+                    Disconnect(server);
                     return;
                 }
                 //Log.Debug("Data receive: "+length);
@@ -135,10 +140,12 @@ namespace Samp.Client
                 //Log.Debug("DATA RECV");
 		        if(length <= 0)
 		        {
-                    Log.Debug("data length 0?");
-			        for (int i=0;i<Server.MAX_BUFF;i++) {buf[i] = 0;}
-			        Thread.Sleep(1);
-			        continue;
+                    Log.Debug("data length 0? Server Closed Connection?");
+                    Disconnect(server);
+                    return;
+			        //for (int i=0;i<Server.MAX_BUFF;i++) {buf[i] = 0;}
+			        //Thread.Sleep(1);
+			        //continue;
 		        }
 		        Packet pak = new Packet();
                 pak.Length = BitConverter.ToUInt16(buf, 0);
@@ -158,8 +165,6 @@ namespace Samp.Client
 		        Thread.Sleep(1);
 	        }
             Log.Debug("Server Disconnected");
-            server.IsConnected = false;
-            server.IsAuthenticated = false;
         }
 
 
@@ -187,7 +192,7 @@ namespace Samp.Client
                         catch (Exception ex)
                         {
                             Log.Message("Server closed connection.");
-                            server.IsConnected = false;
+                            Disconnect(server);
                             return;
                         }
 				        bufpos += size; // next packet
