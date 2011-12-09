@@ -85,6 +85,9 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/DotnetServer.so</output>
+        </linkerTool>
       </compileType>
     </conf>
   </confs>

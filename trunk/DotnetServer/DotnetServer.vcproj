@@ -86,7 +86,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;C:\Projects\SampDotnetScriptAPI\Debug\DotnetServer.dll&quot; &quot;C:\Games\GTA San Andreas\SAMP\plugins\&quot;&#x0D;&#x0A;copy &quot;C:\Projects\SampDotnetScriptAPI\DotnetServer\DotnetServer.ini&quot; &quot;C:\Games\GTA San Andreas\SAMP\plugins\&quot;"
+				CommandLine="copy &quot;C:\Projects\SampDotnetScriptAPI\Debug\DotnetServer.dll&quot; &quot;C:\Games\GTA San Andreas\SAMP\plugins\&quot;&#x0D;&#x0A;copy &quot;C:\Projects\SampDotnetScriptAPI\DotnetServer\DotnetServer.ini&quot; &quot;C:\Games\GTA San Andreas\SAMP\plugins\&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -95,7 +95,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
-			ManagedExtensions="1"
+			ManagedExtensions="0"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -117,7 +117,7 @@
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
