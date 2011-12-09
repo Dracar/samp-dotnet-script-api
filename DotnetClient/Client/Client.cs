@@ -56,7 +56,7 @@ namespace Samp.Client
             PakSender = new PacketBuilder(this);
         }
 
-        public bool Connect(Server server)
+        public bool Connect(Server server) 
         {
             Log.Debug("Connecting to server: " + server.Address);
             _Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
