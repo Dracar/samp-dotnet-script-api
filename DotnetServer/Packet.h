@@ -47,7 +47,7 @@ public:
 		}
 
 		char Opcode;
-		static const char Headerlength = 3; // todo: 3
+		static const char Headerlength = 3; 
 
 		void SetLength()
 		{

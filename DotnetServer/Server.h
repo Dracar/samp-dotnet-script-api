@@ -67,8 +67,8 @@ class Server
 {
 public:
 		static Server* Instance; // singleton
-		Server()
-		{
+		Server();
+		/*{
 			Instance = this;
 			Online = false;
 			for (int i=0;i<MAX_CLIENTS;i++) {Clients[i] = NULL;}
@@ -78,7 +78,7 @@ public:
 			AuthKey = "ChangeMe";
 			Port = 7780;
 			LoadConfig();
-		}
+		}*/
 		static const u_char MAX_CLIENTS = 10;
 		Client* Clients[MAX_CLIENTS]; 
 		Client* NewClient(SOCKET clientsock, sockaddr_in clientaddress);

@@ -48,6 +48,8 @@ void PacketProcessor::ProcessPacket(Client* client,Packet* pak)
 		//Log::Debug("Auth received");
 		char* auth = (char*)calloc(32,1);
 		auth = pak->ReadString(auth,32);
+		//int a = strcmp(auth,Server::Instance->AuthKey);
+		//logprintf("Auth compare: %s / %s / %d",auth,Server::Instance->AuthKey, a);
 		if (strcmp(auth,Server::Instance->AuthKey) == 0)
 		{
 			client->IsAuthenticated = true;

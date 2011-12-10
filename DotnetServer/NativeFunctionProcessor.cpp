@@ -262,7 +262,6 @@ void NativeFunctionProcessor::Init(AMX *pAMX)
 	for (int i=0;i<MAX_FUNCTIONREQUESTQUE;i++) {FunctionRequestQue[i] = NULL;}
 
 	__gpAMX = pAMX;
-	AMXInit = true;
 
 	for (int i=1;i<NativeFunctions_Count();i++)
 	{
@@ -270,17 +269,19 @@ void NativeFunctionProcessor::Init(AMX *pAMX)
 		NativeFunctions[i].func = __sampAmxFunc;
 		if (__sampAmxFunc == NULL)
 		{
-			logprintf("AMX Function '%s' not found!",NativeFunctions[i].Name);
-			//return NULL;
+			//logprintf("AMX Function '%s' not found!",NativeFunctions[i].Name);
+			return;
 		}
 	}
+	
+	AMXInit = true;
 	
 }
 
 		
 amx_function_t NativeFunctionProcessor::FindFunction(char *name)
 {
-	if (!AMXInit) return NULL;
+	//if (!AMXInit) return NULL;
 	if(!__gpAMX)
 	{
 		Log::Warning("AMX not initialized!");
@@ -293,7 +294,7 @@ amx_function_t NativeFunctionProcessor::FindFunction(char *name)
 	
 	if(index == 2147483647)//The command cannot be found.
 	{
-		Log::Warning("Native function not found!");
+		//Log::Warning("Native function not found!");
 		return NULL;
 	}
 
@@ -322,6 +323,7 @@ bool NativeFunctionProcessor::AddFunctionRequestToQue(FunctionRequest* func)
 			SLEEP(1);
 			i++;
 		}
+		logprintf("DotnetServer Debug: Waited %d ms for que to empty.",i);
 	}
 
 	while (functionrequestquelock) {SLEEP(1);}
@@ -374,7 +376,7 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 		amxFunc = sfunc->func;
 		memcpy(request->params,sfunc->Args,strlen(sfunc->Args)+1);
 	}
-	else 
+	if (amxFunc == NULL) 
 	{
 		logprintf("Searching for AMX function: %s.",request->name);
 		amxFunc = FindFunction(request->name);
