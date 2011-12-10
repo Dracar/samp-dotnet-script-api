@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -84,9 +84,9 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>copy "C:\Projects\SampDotnetScriptAPI\DotnetClient\DotnetClient.xml" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Debug\"
-copy "C:\Projects\SampDotnetScriptAPI\DotnetClient\DotnetClient.xml" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"
-copy "C:\Projects\SampDotnetScriptAPI\DotnetClient\ReadMe.txt" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"
-copy "C:\Projects\SampDotnetScriptAPI\DotnetClient\License.txt" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"</PreBuildEvent>
+    <PreBuildEvent>copy "C:\Projects\projects_share\SampDotnetScriptAPI\DotnetClient\DotnetClient.xml" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Debug\"
+copy "C:\Projects\projects_share\SampDotnetScriptAPI\DotnetClient\DotnetClient.xml" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"
+copy "C:\Projects\projects_share\SampDotnetScriptAPI\DotnetClient\ReadMe.txt" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"
+copy "C:\Projects\projects_share\SampDotnetScriptAPI\DotnetClient\License.txt" "C:\Projects\SampDotnetScriptAPI\DotnetClient\bin\Release\"</PreBuildEvent>
   </PropertyGroup>
 </Project>

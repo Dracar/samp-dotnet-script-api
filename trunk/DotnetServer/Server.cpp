@@ -57,6 +57,21 @@ void CreateThreadP(void* (*func)(void*),ServerThreadStartStruct* stss)//, void* 
 
 Server* Server::Instance; // singleton
 
+Server::Server()
+{
+	Instance = this;
+	Online = false;
+	for (int i=0;i<MAX_CLIENTS;i++) {Clients[i] = NULL;}
+	PakProcessor = new PacketProcessor();
+	PakSender = new PacketBuilder();
+	FuncProcessor = new	NativeFunctionProcessor();
+	AuthKey = "ChangeMe";
+	Port = 7780;
+	LoadConfig();
+}
+
+
+
 void Server::SampProcessTick()
 {
 	
@@ -75,15 +90,19 @@ void Server::SampProcessTick()
 void Server::LoadConfig()
 {
 	CSimpleIniA ini;
-	ini.LoadFile("DotnetServer.ini");
-	AuthKey = (char*)ini.GetValue("config", "AuthKey", "ChangeMe");
-	char* portstr = (char*)ini.GetValue("config", "AuthKey", "7780");
+	ini.LoadFile("plugins/DotnetServer.ini");
+	char* keystr = (char*)ini.GetValue("config", "AuthKey", "ChangeMe");
+	AuthKey = (char*)malloc(strlen(keystr)+1);
+	memcpy(AuthKey,keystr,strlen(keystr)+1);
+	//AuthKey = (char*)ini.GetValue("config", "AuthKey", "ChangeMe");
+	char* portstr = (char*)ini.GetValue("config", "Port", "7780");
 	Port = atoi(portstr);
-        
-        /*char* q = (char*)malloc(127);
-        sprintf(q,"q: %s %d",AuthKey,Port);
-        Log::Debug(q);
-        free(q);*/
+    //free(portstr);
+
+    char* q = (char*)malloc(127);
+    sprintf(q,"AuthKey: %s, Port: %d",AuthKey,Port);
+    Log::Debug(q);
+    free(q);
 }
 
 Client* Server::NewClient(SOCKET clientsock, sockaddr_in clientaddress)
@@ -107,7 +126,7 @@ Client* Server::NewClient(SOCKET clientsock, sockaddr_in clientaddress)
 bool Server::RemoveClient(Client* client)
 {
 	if (client == NULL) return false;
-	logprintf("Client (%d - %s) disconnected.",client->ID,inet_ntoa(client->Address.sin_addr));
+	logprintf("DotnetServer: Client (%d - %s) disconnected.",client->ID,inet_ntoa(client->Address.sin_addr));
 	for (int i=0;i<MAX_CLIENTS;i++) 
 	{ 
 		if (Clients[i] == client) 
@@ -237,7 +256,7 @@ void Server::WaitConnect()
 		if (clientsock == INVALID_SOCKET) {Log::Warning("Invalid Socket for client."); continue;}
 
 		Client* client = NewClient(clientsock,clientaddress);
-		logprintf("Client (%d - %s) connected.",client->ID,inet_ntoa(client->Address.sin_addr));
+		logprintf("DotnetServer: Client (%d - %s) connected.",client->ID,inet_ntoa(client->Address.sin_addr));
 
 		ServerThreadStartStruct* stss = new ServerThreadStartStruct(this,client);
 		CreateThreadP(&ServerWaitReceiveThreadStart,stss);

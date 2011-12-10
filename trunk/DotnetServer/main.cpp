@@ -167,6 +167,7 @@ const AMX_NATIVE_INFO DotnetServerNatives[] =
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad( AMX *amx )
 {
+	
 	if (MainServer){if (MainServer->FuncProcessor) MainServer->FuncProcessor->Init(amx);}
 
 	return amx_Register(amx,DotnetServerNatives,-1);

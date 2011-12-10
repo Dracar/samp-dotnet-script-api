@@ -48,7 +48,7 @@ namespace Samp
         private const string Website = "http://code.google.com/p/samp-dotnet-script-api/";
         static void Main(string[] args)
         {
-            Log l = new Log("SampClient", true);
+            Log l = new Log("DotnetClient", true);
             Log.Message(Name + " " + Version);
             Log.Message(Website);
 
