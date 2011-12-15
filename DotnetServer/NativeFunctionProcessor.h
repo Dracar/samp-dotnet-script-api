@@ -71,22 +71,52 @@ public:
 	}
 };
 
+struct AMXScript
+{
+	AMX* Address;
+	char* Name;
+};
+
+struct AMXFunction
+{
+	bool IsNative;
+	AMXScript* Script;
+	char* Name;
+	int Index;
+	//uint32_t Address;
+};
 
 class NativeFunctionProcessor
 {
 public:
 		NativeFunctionProcessor()
 		{
-			AMXInit = false;
+			DotnetAMXScript = NULL;
 			functionrequestquelock = false;
+			for (int i=0;i<MAX_FUNCTIONREQUESTQUE;i++) {FunctionRequestQue[i] = NULL;}
+			for (int i=0;i<MAX_AMXSCRIPTS;i++) {AMXScripts[i] = NULL;}
+			for (int i=0;i<MAX_LOADEDFUNCTIONS;i++) {LoadedFunctions[i] = NULL;}
 		}
 
-		AMX* __gpAMX;
-		bool AMXInit;
-		FunctionRequest* ProcessFunctionRequest(FunctionRequest* function);
+		static const int MAX_AMXSCRIPTS = 100;
+		AMXScript* DotnetAMXScript;
+		AMXScript* AMXScripts[MAX_AMXSCRIPTS];
+		bool AddAMXScript(AMXScript* script);
+		//bool NativeInit;
 		void Init(AMX *pAMX);
-		amx_function_t FindFunction(char *name);
+		AMXFunction* FindFunction(AMXScript* script, char *name); // 
+		AMXFunction* FindFunction(char *name); // 
+		AMXFunction* FindNativeFunction(AMXScript* script, char *name); // These are mostly just wrappers for SDK functions
+		AMXFunction* FindNativeFunction(char *name); 
+		AMXFunction* FindPublicFunction(AMXScript* script, char *name); 
+		AMXFunction* FindPublicFunction(char *name); 
+		AMXFunction* GetFunctionByName(char *funcname);
+		uint32_t GetNativeFunctionAddress(AMXFunction* func); //
+		static const int MAX_LOADEDFUNCTIONS = 1000;
 
+		AMXFunction* LoadedFunctions[MAX_LOADEDFUNCTIONS]; // a list of all the functions we have already searched for
+		
+		FunctionRequest* ProcessFunctionRequest(FunctionRequest* function);
 		bool functionrequestquelock;
 		static const int MAX_FUNCTIONREQUESTQUE = 100;
 		FunctionRequest* FunctionRequestQue[MAX_FUNCTIONREQUESTQUE];

@@ -80,6 +80,19 @@ namespace Samp.API
             }
         };
 
+        public static event EventHandler<OnPlayerKeyPressedEventArgs> OnPlayerKeyReleased;
+        public static event EventHandler<OnPlayerKeyPressedEventArgs> OnPlayerKeyPressed;
+        public class OnPlayerKeyPressedEventArgs : EventArgs
+        {
+            public Player player;
+            public int Key;
+            public OnPlayerKeyPressedEventArgs(Player pl, int key)
+            {
+                player = pl;
+                Key = key;
+            }
+        };
+
         public static event EventHandler<OnPlayerDeathEventArgs> OnPlayerDeath;
         public class OnPlayerDeathEventArgs : EventArgs
         {
@@ -108,7 +121,7 @@ namespace Samp.API
             Samp.Util.Log.Debug("Player not found, creating new.");
             return new Player(id);
         }
-        internal static void RemovePlayer(Player p)
+        internal static bool RemovePlayer(Player p)
         {
             //if (OnPlayerDestroyed != null) OnPlayerDestroyed(null, new OnPlayersCreatedEventArgs(this));
             lock (Players)
@@ -116,9 +129,10 @@ namespace Samp.API
                 for (int i = 0; i < Players.Count(); i++)
                 {
                     if (Players[i] == null) continue;
-                    if (Players[i] == p) { Samp.Util.Log.Debug("Removing Player."); Players[i] = null; return; }
+                    if (Players[i] == p) { Samp.Util.Log.Debug("Removing Player."); Players[i] = null; return true; }
                 }
             }
+            return false;
         }
 
         internal Player(int id)
@@ -163,6 +177,7 @@ namespace Samp.API
 
         public int ID;
         public int PrivLevel = 0;
+        public int Keys = 0;
         public enum PRIV_LEVELS
         {
             Guest,
@@ -208,10 +223,27 @@ namespace Samp.API
             if (String.Compare(CallbackProcessor.GetCallbackById(args.CB.Opcode).Name, "OnPlayerKeyStateChange") == 0)
             {
                 int playerid = args.Data.ReadInt32();
-                int newkeys = args.Data.ReadInt32();
-                int oldkeys = args.Data.ReadInt32();
+                //uint newkeys = args.Data.ReadUInt32(); // no...
+                //uint oldkeys = args.Data.ReadUInt32();
+                //int newkeys = args.Data.ReadInt32(); // also no...
+                //int oldkeys = args.Data.ReadInt32();
+                int newkeys = Math.Abs(args.Data.ReadInt32()); // erm... this seems to match http://wiki.sa-mp.com/wiki/GetPlayerKeys... WTF?
+                int oldkeys = Math.Abs(args.Data.ReadInt32());
+
                 Player player = Player.GetPlayerByID(playerid);
-                if (OnPlayerKeyStateChange != null) OnPlayerKeyStateChange(null, new OnPlayerKeyStateChangeEventArgs(player, newkeys,oldkeys));
+                player.Keys = newkeys;
+                if (OnPlayerKeyStateChange != null) OnPlayerKeyStateChange(null, new OnPlayerKeyStateChangeEventArgs(player, newkeys, oldkeys));
+
+                int key = Math.Abs(newkeys - oldkeys);
+                
+                if (Player.IsKeyJustPressed(key,newkeys,oldkeys))
+                {
+                    if (OnPlayerKeyPressed != null) OnPlayerKeyPressed(null, new OnPlayerKeyPressedEventArgs(player, key));
+                }
+                else
+                {
+                    if (OnPlayerKeyReleased != null) OnPlayerKeyReleased(null, new OnPlayerKeyPressedEventArgs(player, key));
+                }
             }
 
             if (String.Compare(CallbackProcessor.GetCallbackById(args.CB.Opcode).Name, "OnPlayerDeath") == 0)
@@ -231,44 +263,60 @@ namespace Samp.API
         }*/
 
 
+        private Cached<bool> _isConnected = false;
         public bool IsConnected
         {
             get
             {
-                return System.Convert.ToBoolean(NativeFunctionRequestor.RequestFunction("IsPlayerConnected", "i", ID));
+                if (_isConnected.ElapsedMS >= APIMain.CacheMS)
+                {
+                    _isConnected = System.Convert.ToBoolean(NativeFunctionRequestor.RequestFunction("IsPlayerConnected", "i", ID));
+                }
+                return _isConnected;
             }
         }
 
-        private int m_Money = 0;
+        public static bool ServerSideMoney = false;
+        private Cached<int> _money = 0; 
+        //private int m_Money = 0;
         public int Money
         {
             get
             {
-                int cash = NativeFunctionRequestor.RequestFunction("GetPlayerMoney", "i", ID);
-                if (m_Money != cash)
+                if (!ServerSideMoney)
                 {
-                    Log.Warning("Player " + Name + " Money mismatch. (" + cash + "/" + m_Money + ").");
-                    Money = m_Money;
+                    if (_money.ElapsedMS >= APIMain.CacheMS)
+                    {
+                        _money = NativeFunctionRequestor.RequestFunction("GetPlayerMoney", "i", ID);
+                    }
+                    return _money;
                 }
-                return m_Money;
+                else
+                {
+                    return _money;
+                }
             }
             set
             {
                 NativeFunctionRequestor.RequestFunction("ResetPlayerMoney", "i", ID);
                 NativeFunctionRequestor.RequestFunction("GivePlayerMoney", "ii", ID, value);
-                m_Money = value;
+                _money = value;
             }
         }
         public Dialog dialog;
 
-
+        private Cached<float> _health = 0.0F; 
         public float Health
         {
             get
             {
-                FloatRef z = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetPlayerHealth", "iv", ID, z);
-                return z.Value;
+                if (_health.ElapsedMS >= APIMain.CacheMS)
+                {
+                    FloatRef z = new FloatRef(0.0F);
+                    NativeFunctionRequestor.RequestFunction("GetPlayerHealth", "iv", ID, z);
+                    _health = z.Value;
+                }
+                return _health;
             }
             set
             {
@@ -276,72 +324,90 @@ namespace Samp.API
             }
         }
 
-        private string m_Name = "";
+        private string _name = ""; // does name ever change?
         public string Name
         {
             get
             {
-                if (m_Name.Length > 1) return m_Name;
+                if (_name.Length > 1) return _name; // does name ever change?
                 StringRef s = new StringRef("");
                 NativeFunctionRequestor.RequestFunction("GetPlayerName", "ipi", ID, s,32);
-                m_Name = s.Value;
-                return m_Name;
+                _name = s.Value;
+                return _name;
             }
             set
             {
-                m_Name = value;
+                _name = value;
                 NativeFunctionRequestor.RequestFunction("SetPlayerName", "is", ID, value);
             }
         }
 
+        private Cached<float> _zAngle = 0.0F; 
         public float ZAngle
         {
             get
             {
-                FloatRef fr = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetPlayerFacingAngle","iv",ID, fr);
-                return fr.Value;
+                if (_zAngle.ElapsedMS >= APIMain.CacheMS)
+                {
+                    FloatRef fr = new FloatRef(0.0F);
+                    NativeFunctionRequestor.RequestFunction("GetPlayerFacingAngle", "iv", ID, fr);
+                    _zAngle = fr.Value;
+                }
+                return _zAngle;
             }
             set
             {
+                _zAngle = value;
                 NativeFunctionRequestor.RequestFunction("SetPlayerFacingAngle", "if", ID, value);
             }
         }
 
+        private Cached<Vector3> _pos = new Cached<Vector3>(new Vector3()); 
         public Vector3 Pos
         {
             get
             {
-                FloatRef x = new FloatRef(0.0F);
-                FloatRef y = new FloatRef(0.0F);
-                FloatRef z = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetPlayerPos", "ivvv", ID, x, y, z);
-                Vector3 vec = new Vector3(x.Value, y.Value, z.Value);
-                return vec;
+                if (_pos.ElapsedMS >= APIMain.CacheMS)
+                {
+
+                    FloatRef x = new FloatRef(0.0F);
+                    FloatRef y = new FloatRef(0.0F);
+                    FloatRef z = new FloatRef(0.0F); ;
+                    NativeFunctionRequestor.RequestFunction("GetPlayerPos", "ivvv", ID, x, y, z);
+                    _pos = new Vector3(x.Value, y.Value, z.Value);
+                }
+                return _pos;
             }
             set
             {
+                _pos = value;
                 NativeFunctionRequestor.RequestFunction("SetPlayerPos", "ifff", ID, value.X, value.Y, value.Z);
             }
         }
 
 
-
+        private Cached<Vector3> _velocity = new Cached<Vector3>(new Vector3()); 
         public Vector3 Velocity
         {
             get
             {
-                FloatRef x = new FloatRef(0.0F);
-                FloatRef y = new FloatRef(0.0F);
-                FloatRef z = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetPlayerVelocity", "ivvv", ID, x, y, z);
-                Vector3 vec = new Vector3(x.Value, y.Value, z.Value);
-                return vec;
+                if (_velocity.ElapsedMS >= APIMain.CacheMS)
+                {
+
+                    FloatRef x = new FloatRef(0.0F);
+                    FloatRef y = new FloatRef(0.0F);
+                    FloatRef z = new FloatRef(0.0F); ;
+                    NativeFunctionRequestor.RequestFunction("GetPlayerVelocity", "ivvv", ID, x, y, z);
+                    _velocity = new Vector3(x.Value, y.Value, z.Value);
+                }
+                return _velocity;
             }
             set
             {
+                _velocity = value;
                 NativeFunctionRequestor.RequestFunction("SetPlayerVelocity", "ifff", ID, value.X, value.Y, value.Z);
             }
+
         }
 
         public Vehicle Vehicle
@@ -405,35 +471,90 @@ namespace Samp.API
             NativeFunctionRequestor.RequestFunction("SendClientMessage", "iis", ID, colour,message);
         }
 
+        public void AttachObject(GameObject obj,Vector3 offset, Vector3 rot)
+        {
+            NativeFunctionRequestor.RequestFunction("AttachObjectToPlayer", "iiffffff", obj.ID, ID, offset.X, offset.Y, offset.Z, rot.X, rot.Y, rot.Z);
+        }
 
+        public bool IsPressingKey(int key)
+        {
+            if ((Keys & key) == key) return true;
+            return false;
+        }
 
-        public enum Keys
+        public static bool IsKeyJustPressed(int key, int newkeys, int oldkeys) 
+        {
+            if ((newkeys & key) == key && (oldkeys & key) != key) return true;
+            return false;
+        }
+
+        public enum eKeys
         {
             KEY_ACTION = 1,
+            PED_ANSWER_PHONE = 1,
+            VEHICLE_FIREWEAPON = 1,
             KEY_CROUCH = 2,
+            PED_DUCK = 2,
+            VEHICLE_HORN = 2,
             KEY_FIRE = 4,
+            PED_FIREWEAPON = 4,
+            PED_FIREWEAPON_ALT = 4,
+            KEY_LMB = 4,
+            //VEHICLE_FIREWEAPON = 4,
+            VEHICLE_FIREWEAPON_ALT = 4,
             KEY_SPRINT = 8,
+            PED_SPRINT = 8,
+            KEY_W = 8,
+            VEHICLE_ACCELERATE = 8,
             KEY_SECONDARY_ATTACK = 16,
+            VEHICLE_ENTER_EXIT = 16,
+            KEY_ENTER = 16,
+            //VEHICLE_FIREWEAPON_ALT = 16,
             KEY_JUMP = 32,
+            PED_JUMPING = 32,
+            VEHICLE_BRAKE = 32,
+            KEY_VEHICEL_S = 32,
             KEY_LOOK_RIGHT = 64,
+            VEHICLE_LOOKRIGHT = 64,
             KEY_HANDBRAKE = 128,
-            KEY_LOOK_LEFT = 256,
-            KEY_LOOK_BEHIND_VEHICLE = 320, //look left + look right
-            KEY_SUBMISSION = 512,
-            KEY_LOOK_BEHIND = 512,
-            KEY_WALK = 1024,
+            PED_LOCK_TARGET = 128,
+            VEHICLE_HANDBRAKE = 128,
             KEY_AIM = 128,
+            KEY_H = 128,
+            KEY_LOOK_LEFT = 256,
+            VEHICLE_LOOKLEFT = 256,
+            KEY_LOOK_BEHIND_VEHICLE = 320, // left + right,
+            KEY_SUBMISSION = 512,
+            TOGGLE_SUBMISSIONS = 512,
+            KEY_LOOK_BEHIND = 512,
+            PED_LOOKBEHIND = 512,
+            VEHICLE_LOOKBEHIND = 512,
+            KEY_WALK = 1024,
+            SNEAK_ABOUT = 1024,
+            //PED_LOCK_TARGET = 128,
+            //PED_LOCK_TARGET = 128,
             KEY_ANALOG_UP = 2048,
+            VEHICLE_TURRETUP = 2048,
             KEY_ANALOG_DOWN = 4096,
+            VEHICLE_TURRETDOWN = 4096,
             KEY_ANALOG_LEFT = 8192,
+            //VEHICLE_LOOKLEFT = 8192,
+            VEHICLE_TURRETLEFT = 8192,
             KEY_ANALOG_RIGHT = 16384,
+            //VEHICLE_LOOKRIGHT = 16384,
+            VEHICLE_TURRETRIGHT = 16384,
             KEY_YES = 65536,
+            CONVERSATION_YES = 65536,
+            //CONVERSATION_YES = 65536,
             KEY_NO = 131072,
+            CONVERSATION_NO = 131072,
+            //CONVERSATION_NO = 131072,
             KEY_CTRL_BACK = 262144,
-            KEY_UP = -128,
-            KEY_DOWN = 128,
-            KEY_LEFT = -128,
-            KEY_RIGHT = 128
-        };
+            GROUP_CONTROL_BWD = 262144,
+            //GROUP_CONTROL_BWD = 262144,
+            //KEY_VEHICLE_HANDBRAKE = 4294967168
+            
+        }
+
     }
 }

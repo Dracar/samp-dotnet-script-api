@@ -93,6 +93,13 @@ namespace Samp.API
             }
 
             FindScriptAssemblies();
+
+            for (int i = 0; i < RunningScripts.Count; i++)
+            {
+                if (RunningScripts[i] == null) continue;
+                RunningScripts[i].OnLoad();
+                if (OnScriptLoad != null) OnScriptLoad(this, new ScriptEventArgs(RunningScripts[i]));
+            }
         }
         private int FindScriptAssemblies()
         { // searches scripts directory for files to load
@@ -124,9 +131,11 @@ namespace Samp.API
                 Log.Debug("Found " + files.Length + " files in scripts directory.", this);
                 for (int i = 0; i < files.Length; i++)
                 {
+                    int countinas = 0;
                     Log.Debug("Searching scripts in assembly: " + Util.Util.GetFilenameFromPath(files[i]), this);
-                    count += FindScriptsInAssembly(files[i]); // search for the script classes in assembly, then load them
-                    Log.Debug("Loaded " + count + " scripts from assembly: " + Util.Util.GetFilenameFromPath(files[i]), this);
+                    countinas += FindScriptsInAssembly(files[i]); // search for the script classes in assembly, then load them
+                    count += countinas;
+                    Log.Debug("Loaded " + countinas + " scripts from assembly: " + Util.Util.GetFilenameFromPath(files[i]), this);
 
                 }
             }
@@ -270,8 +279,8 @@ namespace Samp.API
                 ScriptBase scr = (ScriptBase)(obj);
                 RunningScripts.Add(scr);
                 Log.Debug("Script " + scr.GetType().FullName + " started.", this);
-                scr.OnLoad();
-                if (OnScriptLoad != null) OnScriptLoad(this, new ScriptEventArgs(scr));
+                //scr.OnLoad();
+                //if (OnScriptLoad != null) OnScriptLoad(this, new ScriptEventArgs(scr));
                 return scr;
             }
             catch (Exception e)
@@ -294,6 +303,10 @@ namespace Samp.API
                 if (RunningScripts[i] == null) continue;
                 RunningScripts[i].OnUnload();
                 if (OnScriptUnload != null) OnScriptUnload(this, new ScriptEventArgs(RunningScripts[i]));
+            }
+            for (int i = 0; i < RunningScripts.Count; i++)
+            {
+                if (RunningScripts[i] == null) continue;
                 RunningScripts[i] = null;
             }
             //if (CleanUp != null) CleanUp(this, new EventArgs());

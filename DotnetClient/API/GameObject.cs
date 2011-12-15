@@ -83,17 +83,19 @@ namespace Samp.API
             Samp.Util.Log.Debug("Objects not found, creating new.");
             return new GameObject(id);
         }
-        internal static void RemoveObject(GameObject v)
+        internal static bool RemoveObject(GameObject v)
         {
+            if (v == null) return false;
             if (OnObjectDestroyed != null) OnObjectDestroyed(null, new OnObjectCreatedEventArgs(v));
             lock (Objects)
             {
                 for (int i = 0; i < Objects.Count(); i++)
                 {
                     if (Objects[i] == null) continue;
-                    if (Objects[i]== v) { Samp.Util.Log.Debug("Removing Object."); Objects[i] = null; return; }
+                    if (Objects[i]== v) { Samp.Util.Log.Debug("Removing Object."); Objects[i] = null; return true; }
                 }
             }
+            return false;
         }
 
         public static void Init()
@@ -125,45 +127,58 @@ namespace Samp.API
         //public bool IsStatic = false; // will be saved to DB
         public int Model;
 
+
+        private Cached<Vector3> _pos = new Cached<Vector3>(new Vector3());
         public Vector3 Pos
         {
             get
             {
-                FloatRef x = new FloatRef(0.0F);
-                FloatRef y = new FloatRef(0.0F);
-                FloatRef z = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetObjectPos", "ivvv", ID, x, y, z);
-                Vector3 vec = new Vector3(x.Value, y.Value, z.Value);
-                return vec;
+                if (_pos.ElapsedMS >= APIMain.CacheMS)
+                {
+
+                    FloatRef x = new FloatRef(0.0F);
+                    FloatRef y = new FloatRef(0.0F);
+                    FloatRef z = new FloatRef(0.0F); ;
+                    NativeFunctionRequestor.RequestFunction("GetObjectPos", "ivvv", ID, x, y, z);
+                    _pos = new Vector3(x.Value, y.Value, z.Value);
+                }
+                return _pos;
             }
             set
             {
-                Vector3 oldpos = Pos;
-                Vector3 oldrot = Rot;
                 NativeFunctionRequestor.RequestFunction("SetObjectPos", "ifff", ID, value.X, value.Y, value.Z);
-                if (OnObjectMoved != null) OnObjectMoved(this,new OnObjectMovedEventArgs(this,value,oldpos,oldrot,oldrot));
+                if (OnObjectMoved != null) OnObjectMoved(this, new OnObjectMovedEventArgs(this, value, Pos, Rot, Rot));
+                _pos = value;
             }
         }
 
 
+
+        private Cached<Vector3> _rot = new Cached<Vector3>(new Vector3());
         public Vector3 Rot
         {
             get
             {
-                FloatRef x = new FloatRef(0.0F);
-                FloatRef y = new FloatRef(0.0F);
-                FloatRef z = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetObjectRot", "ivvv", ID, x, y, z);
-                Vector3 vec = new Vector3(x.Value, y.Value, z.Value);
-                return vec;
+                if (_rot.ElapsedMS >= APIMain.CacheMS)
+                {
+
+                    FloatRef x = new FloatRef(0.0F);
+                    FloatRef y = new FloatRef(0.0F);
+                    FloatRef z = new FloatRef(0.0F); ;
+                    NativeFunctionRequestor.RequestFunction("GetObjectRot", "ivvv", ID, x, y, z);
+                    _rot = new Vector3(x.Value, y.Value, z.Value);
+                }
+                return _rot;
             }
             set
             {
-                Vector3 oldpos = Pos;
-                Vector3 oldrot = Rot;
                 NativeFunctionRequestor.RequestFunction("SetObjectRot", "ifff", ID, value.X, value.Y, value.Z);
-                if (OnObjectMoved != null) OnObjectMoved(this,new OnObjectMovedEventArgs(this,oldpos,oldpos,value,oldrot));
+                if (OnObjectMoved != null) OnObjectMoved(this, new OnObjectMovedEventArgs(this, Pos, Pos, value, Rot));
+                _rot = value;
             }
         }
+
+
+
     }
 }

@@ -60,6 +60,42 @@ namespace Samp.Util
 		}
     }
 
+    public class Cached<T>
+    {
+        //public static int CacheMS = 2; 
+        private T _Value { get; set; }
+        public T Value
+        {
+            get { return _Value; }
+            set
+            {
+                _Value = value;
+                LastSet = DateTime.Now;
+            }
+        }
+
+        public static implicit operator Cached<T>(T value)
+        {
+            return new Cached<T>(value);
+        }
+
+        public static implicit operator T(Cached<T> r)
+        {
+            return r.Value;
+        }
+
+        public DateTime LastSet;
+        public int ElapsedMS
+        {
+            get
+            {
+                TimeSpan span = DateTime.Now.Subtract(LastSet);
+                return (int)span.TotalMilliseconds;
+            }
+        }
+        public Cached(T value) { this.Value = value;}
+    }
+
     public class RefType<T> where T : struct
     {
         public T Value { get; set; }

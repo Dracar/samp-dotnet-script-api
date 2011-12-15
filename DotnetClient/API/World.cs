@@ -114,8 +114,7 @@ namespace Samp.API
 
         public static void DestroyVehicle(Vehicle vehicle)
         {
-            NativeFunctionRequestor.RequestFunction("DestroyVehicle", "i", vehicle.ID);
-            Vehicle.RemoveVehicle(vehicle);
+            if (Vehicle.RemoveVehicle(vehicle)) NativeFunctionRequestor.RequestFunction("DestroyVehicle", "i", vehicle.ID);
         }
 
         public static GameObject CreateObject(int modelid, Vector3 pos, Vector3 rot, float drawdistance)
@@ -128,8 +127,7 @@ namespace Samp.API
 
         public static void DestroyObject(GameObject obj)
         {
-            NativeFunctionRequestor.RequestFunction("DestroyObject", "i", obj.ID);
-            GameObject.RemoveObject(obj);
+            if (GameObject.RemoveObject(obj)) NativeFunctionRequestor.RequestFunction("DestroyObject", "i", obj.ID);
         }
 
         public static GameObject[] GetObjectsInArea(Vector3 wpos, float distance)

@@ -58,6 +58,16 @@ namespace Samp.API
             Z = z;
         }
 
+        public Vector3(Vector3 clone)
+        {
+            X = clone.X;
+            Y = clone.Y;
+            Z = clone.Z;
+        }
+
+
+        // gbertoli3
+        // http://www.dreamincode.net/code/snippet4417.htm
         public float Distance(Vector3 other)
         {
             //     __________________________________

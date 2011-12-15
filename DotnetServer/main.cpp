@@ -142,7 +142,7 @@ cell AMX_NATIVE_CALL DotnetServer_ReceiveCallback(AMX * amx, cell * params)
 
 	if (callbackid == 0)
 	{
-		logprintf("DotnetHook Warning! Invalid Callback received.");
+		logprintf("DotnetServer Warning! Invalid Callback received.");
 	}
 	else
 	{
