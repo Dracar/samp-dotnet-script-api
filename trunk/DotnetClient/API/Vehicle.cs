@@ -69,7 +69,7 @@ namespace Samp.API
             Samp.Util.Log.Debug("Vehicle not found, creating new.");
             return new Vehicle(id);
         }
-        internal static void RemoveVehicle(Vehicle v)
+        internal static bool RemoveVehicle(Vehicle v)
         {
             if (OnVehicleDestroyed != null) OnVehicleDestroyed(null, new OnVehicleCreatedEventArgs(v));
             lock (Vehicles)
@@ -77,9 +77,10 @@ namespace Samp.API
                 for (int i = 0; i < Vehicles.Count(); i++)
                 {
                     if (Vehicles[i] == null) continue;
-                    if (Vehicles[i]== v) { Samp.Util.Log.Debug("Removing RemoveVehicle."); Vehicles[i] = null; return; }
+                    if (Vehicles[i]== v) { Samp.Util.Log.Debug("Removing RemoveVehicle."); Vehicles[i] = null; return true; }
                 }
             }
+            return false;
         }
 
         internal Vehicle(int id)

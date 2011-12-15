@@ -60,7 +60,6 @@ namespace Samp.Scripts.ExampleScripts
             int vehicleid = NativeFunctionRequestor.RequestFunction("CreateVehicle", model, x.Value, y.Value, z.Value, angle.Value, 0, 0, 300);// note that we use x.Value now
             NativeFunctionRequestor.RequestFunction("PutPlayerInVehicle", playerid,vehicleid,0);
             NativeFunctionRequestor.RequestFunction("SendClientMessage", playerid, 0,"{00FF00}Vehicle Spawned.");
-
         }
     }
 }

@@ -167,6 +167,14 @@ namespace Samp.Client
             return ret;
         }
 
+        public uint ReadUInt32()
+        {
+            uint ret = (uint)(Data[Pos] + (Data[Pos + 1] << 8) + (Data[Pos + 2] << 16) + (Data[Pos + 3] << 24));
+            Pos += 4;
+            return ret;
+        }
+
+
         public float ReadFloat32()
         {
             float ret = System.BitConverter.ToSingle(Data, Pos);

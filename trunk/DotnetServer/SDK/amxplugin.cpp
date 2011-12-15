@@ -133,6 +133,13 @@ int AMXAPI amx_GetPublic(AMX *amx, int index, char *funcname)
 	return fn(amx, index, funcname);
 }
 
+typedef int  AMXAPI (*amx_GetPublic_tt)(AMX *amx, int index, char *funcname,unsigned int* retarddr);
+int AMXAPI amx_GetPublicc(AMX *amx, int index, char *funcname,unsigned int* retarddr)
+{
+	amx_GetPublic_tt fn = ((amx_GetPublic_tt*)pAMXFunctions)[PLUGIN_AMX_EXPORT_GetPublic];
+	return fn(amx, index, funcname,retarddr);
+}
+
 typedef int  AMXAPI (*amx_GetPubVar_t)(AMX *amx, int index, char *varname, cell *amx_addr);
 int AMXAPI amx_GetPubVar(AMX *amx, int index, char *varname, cell *amx_addr)
 {

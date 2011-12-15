@@ -13,6 +13,12 @@ const MAX_STRING = 32;
 const MAX_PACKET = (MAX_STRING*3) + 20; // largest callback we will need to send
 native DotnetServer_ReceiveCallback(packet[MAX_PACKET]); // our callback commands are sent as cell(4bytes) array
 
+forward DotnetFSInit();
+public DotnetFSInit()
+{
+	// stuff
+}
+
 enum Callback
 {
 	opcode,
@@ -824,5 +830,20 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             return 1;
     }
 	
+	
+	forward TestNativeForward();
+    public TestNativeForward()
+    {
+		print("TestNativeForward");
+    	//SendClientMessageToAll(colour, msg);
+    }
+    
+    forward TestNativeForward2(msg[], msg2[],msg3[]);
+    public TestNativeForward2(msg[],msg2[],msg3[])
+    {
+		printf("TestNativeForward2 %s - %s - %s",msg,msg2,msg3);
+    	//SendClientMessageToAll(colour, msg);
+    }
+    
 
  

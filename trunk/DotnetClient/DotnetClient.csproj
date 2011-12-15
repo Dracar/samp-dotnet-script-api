@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\APIMain.cs" />
-    <Compile Include="API\Dialogue.cs" />
+    <Compile Include="API\Dialog.cs" />
     <Compile Include="API\GameObject.cs" />
     <Compile Include="API\Menu.cs" />
     <Compile Include="API\Player.cs" />

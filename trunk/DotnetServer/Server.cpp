@@ -74,7 +74,14 @@ Server::Server()
 
 void Server::SampProcessTick()
 {
-	
+	/*FunctionRequest* fr = new FunctionRequest();
+	fr->name = "TestNativeForward2";
+	fr->params = "sss";
+	fr->data->AddString("Moo1");
+	fr->data->AddString("Moo2");
+	fr->data->AddString("Moo3");
+	FuncProcessor->ProcessFunctionRequest(fr);
+	Log::Debug("DONE");*/
 	int count = FuncProcessor->ProcessFunctionRequestQue();
 	/*if (count > 0)
 	{
@@ -277,12 +284,6 @@ void Server::WaitReceive(Client* client)
 	{
 		length = recv(client->Socket, buf, Client::MAX_BUFF, 0);
 		if (length <= 0) { Log::Debug("Receive thread error.");  RemoveClient(client); free(buf); return;}
-		/*if(length < 1)
-		{
-			memset(buf, 0, Client::MAX_BUFF); //todo: remove this
-			SLEEP(1);
-			continue;
-		}*/
 		Packet* pak = new Packet();
 		memcpy(&pak->Length,buf,2);
 		pak->Opcode = buf[2];
@@ -316,7 +317,7 @@ void Server::WaitSend(Client* client)
 				char* buf = (char*)calloc(size,1);
 				for (int i=0;i<size;i++){buf[i] = client->sendbuf[bufpos+i];} // copy the data
 
-				int iRet = send(client->Socket, buf, size, MSG_NOSIGNAL); // send data // todo: check for SIGPIPE error
+				int iRet = send(client->Socket, buf, size, MSG_NOSIGNAL); // send data
 				if (iRet == -1) {Log::Debug("Send thread error.");  free(buf); RemoveClient(client); return;}
 
 				bufpos += size; // next packet
@@ -337,7 +338,17 @@ void Server::SendPacket(Client* client,Packet* packet)
 	if (packet->Opcode == 0x00) return;
 	packet->Length += Packet::Headerlength; // todo: move this
 	if (packet->Length <= 0) return;
-	if (client->sbufpos + packet->Length >= client->MAX_BUFF) return;
+	if (client->sbufpos + packet->Length >= client->MAX_BUFF) 
+	{
+		Log::Warning("CLient send buffer is full! Wating for buffer to empty!");
+		int i=0;
+		while (client->sbufpos != 0 && i < 100)
+		{
+			i++;
+			SLEEP(1);
+		}
+	}
+	if (client->sbufpos + packet->Length >= client->MAX_BUFF) {Log::Warning("CLient send buffer is STILL full! Dropping packet!"); return; }
 
 	while (client->sbuflock) {SLEEP(1);} 
 	client->sbuflock = true;

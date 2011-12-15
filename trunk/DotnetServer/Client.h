@@ -70,12 +70,9 @@ public:
 			IsAuthenticated = false;
 			ID = -1;
 			sbuflock = false;
-			rbuflock = false;
 			sbufpos = 0;
-			rbufpos = 0;
 			Timeout = 0;
 			for (int i=0;i<MAX_BUFF;i++) {sendbuf[i] = 0;}
-			for (int i=0;i<MAX_BUFF;i++) {recvbuf[i] = 0;}
 			CallbackFequency = 1;
 		}
 
@@ -88,13 +85,10 @@ public:
 		SOCKET Socket;
 		char CallbackFequency;
 
-		static const int MAX_BUFF = 1023;
-		char sendbuf[MAX_BUFF]; // buffer structure = {char paklength, char[] data, repeat for more packets in buffer}
-		char recvbuf[MAX_BUFF];
+		static const int MAX_BUFF = 1300;
+		char sendbuf[MAX_BUFF]; // buffer structure = {ushort paklength, char[] data, repeat for more packets in buffer}
 		bool sbuflock; // locks send buffer from read/write, for thread safety
-		bool rbuflock; // lock receive buffer
 		unsigned short sbufpos;
-		unsigned short rbufpos;
 
 		u_short Timeout;
 		static const u_short MAX_TIMEOUT = 30; // seconds

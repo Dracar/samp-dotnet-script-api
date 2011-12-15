@@ -37,22 +37,13 @@ namespace Samp.API
 {
     public class APIMain
     {
+        public static int CacheMS = 10; // how many ms we cache values for before re requesting them from server
+
         public static ScriptManager ScriptManager;
         public static void Init()
         {
             ScriptManager = new ScriptManager();
             ScriptManager.LoadAllScripts();
-            /*Scripts.BuildServer.BuildServerScript bss = new Samp.Scripts.BuildServer.BuildServerScript();
-            AllScripts[0] = bss;
-            Scripts.Account.AccountScript acs = new Samp.Scripts.Account.AccountScript();
-            AllScripts[1] = acs;
-            Scripts.Level.LevelScript ls = new Samp.Scripts.Level.LevelScript();
-            AllScripts[2] = ls;
-            Scripts.BuildSkills.BuildSkillScript bsk = new Samp.Scripts.BuildSkills.BuildSkillScript();
-            AllScripts[3] = bsk;
-            Scripts.ObjectSave.ObjectSaveScript oss = new Samp.Scripts.ObjectSave.ObjectSaveScript();
-            AllScripts[4] = oss;
-            */
             Player.Init();
             Dialog.Init();
             GameObject.Init();
