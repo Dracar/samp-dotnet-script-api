@@ -46,10 +46,9 @@ namespace Samp.Client
         public static void FireOnCallbackReceived(object sender, OnCallbackReceivedEventArgs args) { if (OnCallbackReceived != null) OnCallbackReceived(sender, args); }
         public static event EventHandler<OnCallbackReceivedEventArgs> OnCallbackReceived;
 
+        public static void FireOnFunctionRequestReceived(object sender, OnFunctionRequestReceivedEventArgs args) { if (OnFunctionRequestReceived != null) OnFunctionRequestReceived(sender, args); }
+        public static event EventHandler<OnFunctionRequestReceivedEventArgs> OnFunctionRequestReceived;
 
-
-        //public static void FireOnPlayerConnect(object sender, OnPlayerConnectEventArgs args) { if (OnPlayerConnect != null) OnPlayerConnect(sender, args); }
-        //public static event EventHandler<OnPlayerConnectEventArgs> OnPlayerConnect;
     }
 
     public class OnPacketReceivedEventArgs : EventArgs
@@ -82,25 +81,36 @@ namespace Samp.Client
     {
         public Server _Server;
         public Client _Client;
-        public CallbackProcessor.Callback CB;
+        public string CallbackName;
+        //public CallbackProcessor.Callback CB;
         public DataStream Data;
-        public OnCallbackReceivedEventArgs(Server server, Client client, CallbackProcessor.Callback cb, DataStream data)
+        public OnCallbackReceivedEventArgs(Server server, Client client, string callbackname, DataStream data)
         {
             _Server = server;
             _Client = client;
-            CB = cb;
+            CallbackName = callbackname;
             Data = data;
         }
     };
 
-    /*
-    public class OnPlayerConnectEventArgs : EventArgs
+
+    public class OnFunctionRequestReceivedEventArgs : EventArgs
     {
-        public int Param0_i;
-        public OnPlayerConnectEventArgs(int param0_i)
+        public Server Server;
+        public Client Client;
+        public string FunctionName;
+        public string CallbackName;
+        public string Paramtypes;
+        public DataStream Data;
+        public OnFunctionRequestReceivedEventArgs(Server server, Client client, string funcname, string callbackname, string paramtypes, DataStream data)
         {
-            Param0_i = param0_i;
+            Server = server;
+            Client = client;
+            FunctionName = funcname;
+            CallbackName = callbackname;
+            Paramtypes = paramtypes;
+            Data = data;
         }
     };
-     * */
+
 }

@@ -57,6 +57,35 @@ void PacketBuilder::SendAuthReply(Client* client,bool success)
 	Server::Instance->SendPacket(client,sp);
 	delete(sp);
 }
+void PacketBuilder::SendFunctionResponse(Client* client,FunctionRequest* function)
+{
+	if (client == NULL) return;
+	Packet* sendpak = new Packet();
+	sendpak->Opcode = Packet::FunctionReply;
+	sendpak->AddString(function->guid);
+	sendpak->AddString(function->name);
+	sendpak->AddInt32(function->response);
+	sendpak->AddString(function->params);
+	
+	sendpak->AddData(&function->data->Data[0],function->data->Length);
+
+	      
+        /*char* qq = (char*)malloc(127);
+        sprintf(qq,"requestpacketsize: %d",sendpak->Length);
+        Log::Debug(qq);
+        free(qq);*/
+	//Log::Debug("SendFunctionResponse");
+	Server::Instance->SendPacket(client,sendpak);
+	delete(sendpak);
+}
+
+
+
+
+
+
+
+/*
 void PacketBuilder::SendCallbackToAll(Packet* sp)
 //void PacketBuilder::SendCallbackToAll(char callbackid,char* paramtypes, char* data,char datalength)
 {
@@ -83,25 +112,54 @@ void PacketBuilder::SendCallback(Client* client, Packet* sp)
 	Server::Instance->SendPacket(client,sp);
 }
 
-void PacketBuilder::SendFunctionResponse(Client* client,FunctionRequest* function)
-{
-	if (client == NULL) return;
-	Packet* sendpak = new Packet();
-	sendpak->Opcode = Packet::FunctionReply;
-	sendpak->AddString(function->guid);
-	sendpak->AddString(function->name);
-	sendpak->AddInt32(function->response);
-	sendpak->AddString(function->params);
-	
-	sendpak->AddData(&function->data->Data[0],function->data->Length);
 
-	      
-        /*char* qq = (char*)malloc(127);
-        sprintf(qq,"requestpacketsize: %d",sendpak->Length);
-        Log::Debug(qq);
-        free(qq);*/
-	//Log::Debug("SendFunctionResponse");
-	Server::Instance->SendPacket(client,sendpak);
-	delete(sendpak);
+void PacketBuilder::SendFunctionRequestToAll(Packet* sp)
+{
+	sp->pos = 0;
+	for (int i=0;i<Server::MAX_CLIENTS;i++)
+	{
+		if (Server::Instance->Clients[i] != NULL) 
+		{
+			Client* client = Server::Instance->Clients[i];
+			SendFunctionRequest(client,sp);
+		}
+	}
 }
+void PacketBuilder::SendFunctionRequest(Client* client, Packet* sp)
+//void PacketBuilder::SendCallback(Client* client, char callbackid,char* paramtypes, char* data,char datalength)
+{
+	Server::Instance->SendPacket(client,sp);
+}
+*/
+
+
+void PacketBuilder::SendPacketToAll(Packet* sp)
+{
+
+
+	sp->pos = 0;
+	for (int i=0;i<Server::MAX_CLIENTS;i++)
+	{
+		if (Server::Instance->Clients[i] != NULL) 
+		{
+			Client* client = Server::Instance->Clients[i];
+
+			if (sp->Opcode == Packet::Callback)
+			{
+				if (client->CallbackFequency == 0) continue; // this client does not want any callbacks
+				char* callbackname = (char*)malloc(32);
+				sp->ReadString(callbackname,32);
+				sp->pos = 0;
+				if (client->CallbackFequency == 1) // this client does not want the frequent callbacks
+				{
+					if ((strcmp(callbackname,"OnPlayerUpdate") == 0) || (strcmp(callbackname,"OnUnoccupiedVehicleUpdate") == 0)) {free(callbackname); continue;}
+				}
+				free(callbackname); 
+			}
+			Server::Instance->SendPacket(client,sp);
+		}
+	}
+}
+
+
 

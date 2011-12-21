@@ -37,7 +37,7 @@ namespace Samp.Client
 {
     public class CallbackProcessor
     {
-
+        /*
         public struct Callback
         {
             public int Opcode;
@@ -111,7 +111,7 @@ namespace Samp.Client
                 if (Callbacks[i].Opcode == id) return Callbacks[i];
             }
             return Callbacks[0];
-        }
+        }*/
         /*
         public static void ProcessCallback(byte callbackid, string paramtypes, byte[] data)
         {

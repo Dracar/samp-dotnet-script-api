@@ -38,220 +38,6 @@
 
 
 
-
-/*
-struct sNativeFunction
-{
-	int id;
-	char* Name;
-	char* Args;
-	AMXFunction* AMXFunc;
-};
-
-sNativeFunction NativeFunctions[] = 
-{
-	{0,"NULL",								"",		NULL },
-	{1,"SendClientMessage",					"iis" , NULL },
-	{2,"SendClientMessageToAll",				"is" , NULL },
-	{3,"SendDeathMessage",					"iii" , NULL },
-	{4,"GameTextForAll",						"sii" , NULL },
-	{5,"GameTextForPlayer",					"isii" , NULL },
-	{6,"GetTickCount",						"" , NULL },
-	{7,"GetMaxPlayers",						"" , NULL },
-	{8,"SetGameModeText",						"s" , NULL },
-	{9,"SetTeamCount",						"i" , NULL },
-	{10,"AddPlayerClass",						"iffffiiiiii" , NULL },
-	{11,"AddPlayerClassEx",					"iiffffiiiiii" , NULL },
-	{12,"AddStaticVehicle",					"iffffii" , NULL },
-	{13,"AddStaticVehicleEx",					"iffffiii" , NULL },
-	{14,"AddStaticPickup",						"iifff" , NULL },
-	{15,"ShowNameTags",						"i" , NULL },
-	{16,"ShowPlayerMarkers",					"i" , NULL },
-	{17,"GameModeExit",						"" , NULL },
-	{18,"SetWorldTime",						"i" , NULL },
-	{19,"GetWeaponName",						"ivi" , NULL },
-	{20,"EnableTirePopping",					"i" , NULL },
-	{21,"AllowInteriorWeapons",				"i" , NULL },
-	{22,"SetWeather",							"i" , NULL },
-	{23,"SetGravity",							"f" , NULL },
-	{24,"AllowAdminTeleport",					"i" , NULL },
-	{25,"SetDeathDropAmount",					"i" , NULL },
-	{26,"CreateExplosion",						"fffif" , NULL },
-	//{27,"SetDisabledWeapons",					"" , NULL },
-	{28,"EnableZoneNames",						"i" , NULL },
-	{29,"IsPlayerAdmin",						"i" , NULL },
-	{30,"Kick",								"i" , NULL },
-	//{31,"BanEx",								"is" , NULL },
-	{32,"Ban",									"i" , NULL },
-	{33,"SendRconCommand",						"s" , NULL },
-
-
-	{34,"SetSpawnInfo",						"iiiffffiiiiii" , NULL },
-	{35,"SpawnPlayer",							"i" , NULL },
-	{36,"SetPlayerPos",						"ifff" , NULL },
-	{37,"GetPlayerPos",						"ivvv" , NULL },
-	{38,"SetPlayerFacingAngle",				"if" , NULL },
-	{39,"GetPlayerFacingAngle",				"iv" , NULL },
-	{40,"SetPlayerInterior",					"ii" , NULL },
-	{41,"GetPlayerInterior",					"i" , NULL },
-	{42,"SetPlayerHealth",						"if" , NULL },
-	{43,"GetPlayerHealth",						"iv" , NULL },
-	{44,"SetPlayerArmour",						"if" , NULL },
-	{45,"GetPlayerArmour",						"iv" , NULL },
-	{46,"SetPlayerAmmo",						"iii" , NULL },
-	{47,"GetPlayerAmmo",						"i" , NULL },
-	{48,"SetPlayerTeam",						"ii" , NULL },
-	{49,"GetPlayerTeam",						"i" , NULL },
-	{50,"SetPlayerScore",						"ii" , NULL },
-	{51,"GetPlayerScore",						"i" , NULL },
-	{52,"SetPlayerColor",						"ii" , NULL },
-	{53,"GetPlayerColor",						"i" , NULL },
-	{54,"SetPlayerSkin",						"ii" , NULL },
-	{55,"GivePlayerWeapon",					"iii" , NULL },
-	{56,"ResetPlayerWeapons",					"i" , NULL },
-	{57,"GetPlayerWeaponData",					"iiiviv{" , NULL },
-	{58,"GivePlayerMoney",						"ii" , NULL },
-	{59,"ResetPlayerMoney",					"i" , NULL },
-	{60,"SetPlayerName",						"is" , NULL },
-	{61,"GetPlayerMoney",						"i" , NULL },
-	{62,"GetPlayerState",						"i" , NULL },
-	{63,"GetPlayerIp",							"ipi" , NULL },
-	{64,"GetPlayerPing",						"i" , NULL },
-	{65,"GetPlayerWeapon",						"i" , NULL },
-	{66,"GetPlayerKeys",						"ivvv" , NULL },
-	{67,"GetPlayerName",						"ipi" , NULL },
-	{68,"PutPlayerInVehicle",					"iii" , NULL },
-	{69,"GetPlayerVehicleID",					"i" , NULL },
-	{70,"RemovePlayerFromVehicle",				"i" , NULL },
-	{71,"TogglePlayerControllable",			"ii" , NULL },
-	{72,"PlayerPlaySound",						"iifff" , NULL },
-	{73,"SetPlayerCheckpoint",					"iffff" , NULL },
-	{74,"DisablePlayerCheckpoint",				"i" , NULL },
-	{75,"SetPlayerRaceCheckpoint",				"iifffffff" , NULL },
-	{76,"DisablePlayerRaceCheckpoint",			"i" , NULL },
-	{77,"SetPlayerWorldBounds",				"iffff" , NULL },
-	{78,"SetPlayerMarkerForPlayer",			"iii" , NULL },
-	{79,"ShowPlayerNameTagForPlayer",			"iii" , NULL },
-	{80,"SetPlayerMapIcon",					"iifffii" , NULL },
-	{81,"RemovePlayerMapIcon",					"ii" , NULL },
-	{82,"SetPlayerCameraPos",					"ifff" , NULL },
-	{83,"SetPlayerCameraLookAt",				"ifff" , NULL },
-	{84,"SetCameraBehindPlayer",				"i" , NULL },
-	{85,"AllowPlayerTeleport",					"ii" , NULL },
-	{86,"IsPlayerConnected",					"i" , NULL },
-	{87,"IsPlayerInVehicle",					"ii" , NULL },
-	{88,"IsPlayerInAnyVehicle",				"i" , NULL },
-	{89,"IsPlayerInCheckpoint",				"i" , NULL },
-	{90,"IsPlayerInRaceCheckpoint",			"i" , NULL },
-	{91,"SetPlayerTime",						"iii" , NULL },
-	{92,"TogglePlayerClock",					"ii" , NULL },
-	{93,"SetPlayerWeather",					"ii" , NULL },
-	{94,"GetPlayerTime",						"ivv" , NULL },
-	{95,"SetPlayerVirtualWorld",				"ii" , NULL },
-	{96,"GetPlayerVirtualWorld",				"i" , NULL },
-
-
-	{97,"CreateVehicle",						"iffffiii" , NULL },
-	{98,"DestroyVehicle",						"i" , NULL },
-	{99,"GetVehiclePos",						"ivvv" , NULL },
-	{100,"SetVehiclePos",						"ifff" , NULL },
-	{101,"GetVehicleZAngle",					"iv" , NULL },
-	{102,"SetVehicleZAngle",					"if" , NULL },
-	{103,"SetVehicleParamsForPlayer",			"iiii" , NULL },
-	{104,"SetVehicleToRespawn",					"i" , NULL },
-	{105,"LinkVehicleToInterior",				"ii" , NULL },
-	{106,"AddVehicleComponent",					"ii" , NULL },
-	{107,"ChangeVehicleColor",					"iii" , NULL },
-	{108,"ChangeVehiclePaintjob",				"ii" , NULL },
-	{109,"SetVehicleHealth",					"if" , NULL },
-	{110,"GetVehicleHealth",					"iv" , NULL },
-	{111,"AttachTrailerToVehicle",				"ii" , NULL },
-	{112,"DetachTrailerFromVehicle",			"i" , NULL },
-	{113,"IsTrailerAttachedToVehicle",			"i" , NULL },
-	{114,"SetVehicleNumberPlate",				"is" , NULL },
-	{115,"SetVehicleVirtualWorld",				"ii" , NULL },
-	{116,"GetVehicleVirtualWorld",				"i" , NULL },
-	{117,"ApplyAnimation",						"issfiiiii" , NULL },
-
-
-	{118,"CreateObject",						"ifffffff" , NULL },
-	{119,"SetObjectPos",						"ifff" , NULL },
-	{120,"GetObjectPos",						"ivvv" , NULL },
-	{121,"SetObjectRot",						"ifff" , NULL },
-	{122,"GetObjectRot",						"ivvv" , NULL },
-	{123,"IsValidObject",						"i" , NULL },
-	{124,"DestroyObject",						"i" , NULL },
-	{125,"MoveObject",							"iffff" , NULL },
-	{126,"StopObject",							"i" , NULL },
-	{127,"CreatePlayerObject",					"iiffffff" , NULL },
-	{128,"SetPlayerObjectPos",					"iifff" , NULL },
-	{129,"GetPlayerObjectPos",					"iivvv" , NULL },
-	{130,"GetPlayerObjectRot",					"iivvv" , NULL },
-	{131,"SetPlayerObjectRot",					"iifff" , NULL },
-	{132,"IsValidPlayerObject",					"ii" , NULL },
-	{133,"DestroyPlayerObject",					"ii" , NULL },
-	{134,"MovePlayerObject",					"iiffff" , NULL },
-	{135,"StopPlayerObject",					"ii" , NULL },
-
-	{136,"CreateMenu",							"siffff" , NULL },
-	{137,"DestroyMenu",							"i" , NULL },
-	{138,"AddMenuItem",							"iis" , NULL },
-	{139,"SetMenuColumnHeader",					"iis" , NULL },
-	{140,"ShowMenuForPlayer",					"ii" , NULL },
-	{141,"HideMenuForPlayer",					"ii" , NULL },
-	{142,"IsValidMenu",							"i" , NULL },
-	{143,"DisableMenu",							"i" , NULL },
-	{144,"DisableMenuRow",						"ii" , NULL },
-
-	{145,"TextDrawCreate",						"ffs" , NULL },
-	{146,"TextDrawDestroy",						"i" , NULL },
-	{147,"TextDrawLetterSize",					"iff" , NULL },
-	{148,"TextDrawTextSize",					"iff" , NULL },
-	{149,"TextDrawAlignment",					"ii" , NULL },
-	{150,"TextDrawColor",						"ii" , NULL },
-	{151,"TextDrawUseBox",						"ii" , NULL },
-	{152,"TextDrawBoxColor",					"ii" , NULL },
-	{153,"TextDrawSetShadow",					"ii" , NULL },
-	{154,"TextDrawSetOutline",					"ii" , NULL },
-	{155,"TextDrawBackgroundColor",				"ii" , NULL },
-	{156,"TextDrawFont",						"ii" , NULL },
-	{157,"TextDrawSetProportional",				"ii" , NULL },
-	{158,"TextDrawShowForPlayer",				"ii" , NULL },
-	{159,"TextDrawHideForPlayer",				"ii" , NULL },
-	{160,"TextDrawShowForAll",					"i" , NULL },
-	{161,"TextDrawHideForAll",					"i" , NULL },
-	{162,"ShowPlayerDialog",					"iiissss" , NULL },
-	{163,"GetVehicleVelocity",					"ivvv" , NULL },
-	{164,"SetVehicleVelocity",					"ifff" , NULL },
-	{165,"AttachObjectToPlayer",				"iiffffff", NULL }
-};
-int NativeFunctions_Count()
-{
-	return (sizeof(NativeFunctions) / (sizeof(int) + sizeof(const char *) + sizeof(const char *) + sizeof(amx_function_t)));
-}*/
-/*
-sNativeFunction* GetNativeByID(int id)
-{
-	for (int i=0;i<NativeFunctions_Count();i++)
-	{
-		if (NativeFunctions[i].id == id) return &NativeFunctions[i];
-	}
-	return &NativeFunctions[0];
-}*/
-/*
-sNativeFunction* GetNativeByName(char* name)
-{
-	for (int i=0;i<NativeFunctions_Count();i++)
-	{
-		if (strcmp(NativeFunctions[i].Name,name) == 0) return &NativeFunctions[i];
-	}
-	return NULL;
-}
-*/
-
-
-
-
 void NativeFunctionProcessor::Init(AMX* pAMX)
 {
 	if(!pAMX) return;
@@ -259,7 +45,8 @@ void NativeFunctionProcessor::Init(AMX* pAMX)
 	script->Address = pAMX;
 	script->Name = "NONAME"; // todo
 	AddAMXScript(script);
-	if (FindPublicFunction(script, "DotnetFSInit")) DotnetAMXScript = script;
+	if (FindPublicFunction(script, "DotnetFSInit")) {logprintf("DotnetAMXScript %d",script); DotnetAMXScript = script;}
+	logprintf("scr: %d",DotnetAMXScript);
 }
 
 bool NativeFunctionProcessor::AddAMXScript(AMXScript* script)
@@ -283,12 +70,13 @@ AMXFunction* NativeFunctionProcessor::FindNativeFunction(AMXScript* script, char
 	int index=0;
 	amx_FindNative(script->Address, funcname,&index);
 	if (index == 2147483647) return NULL;
-	
+	logprintf("FindNativeFunction %s found",funcname);
 	AMXFunction* func = new AMXFunction();
 	func->Index = index;
 	func->IsNative = true;
-	func->Name = funcname;
-	func->Script = DotnetAMXScript;
+	memcpy(func->Name,funcname,strlen(funcname)+1);
+	//func->Name = funcname;
+	func->Script = script;
 	return func;
 }
 
@@ -312,11 +100,11 @@ AMXFunction* NativeFunctionProcessor::FindPublicFunction(AMXScript* script, char
 		int index=0;
 		amx_FindPublic(script->Address, funcname,&index);
 		if (index == 2147483647) return NULL;
-
+		Log::Debug("FindPublicFunction found");
 		AMXFunction* func = new AMXFunction();
 		func->Index = index;
 		func->IsNative = false;
-		func->Name = funcname;
+		memcpy(func->Name,funcname,strlen(funcname)+1);
 		func->Script = script;
 		return func;
 }
@@ -343,17 +131,17 @@ AMXFunction* NativeFunctionProcessor::FindFunction(AMXScript* script, char *func
 
 AMXFunction* NativeFunctionProcessor::GetFunctionByName(char *funcname)
 {
+	//logprintf("GetFunctionByName: %s",funcname);
 	for (int i=0;i<MAX_LOADEDFUNCTIONS;i++)
 	{
 		if (LoadedFunctions[i] == NULL) continue;
-		if (strcmp(LoadedFunctions[i]->Name,funcname) == 0) return LoadedFunctions[i]; // found it in our loaded list
+		if (strcmp(LoadedFunctions[i]->Name,funcname) == 0) {return LoadedFunctions[i]; }// found it in our loaded list
 	}
 	AMXFunction* ret = FindFunction(funcname);
 	if (ret == NULL) return NULL;
-	ret->Name = funcname;
 	for (int i=0;i<MAX_LOADEDFUNCTIONS;i++)
 	{
-		if (LoadedFunctions[i] == NULL) LoadedFunctions[i] = ret; // add the function to our list, so we dont have to search for it again
+		if (LoadedFunctions[i] == NULL) {LoadedFunctions[i] = ret; break;} // add the function to our list, so we dont have to search for it again
 	}
 	return ret;
 }
@@ -364,7 +152,7 @@ AMXFunction* NativeFunctionProcessor::GetFunctionByName(char *funcname)
 uint32_t NativeFunctionProcessor::GetNativeFunctionAddress(AMXFunction* func)
 {
 	if (!func->IsNative) return NULL;
-	 //Proceed with locating the memory address for this function;
+
 	unsigned int call_addr = 0;
 	AMX_HEADER *hdr = (AMX_HEADER *) func->Script->Address->base;
 	call_addr = (unsigned int)((AMX_FUNCSTUB *)((char *)(hdr) + (hdr)->natives + hdr->defsize * func->Index))->address;
@@ -372,44 +160,6 @@ uint32_t NativeFunctionProcessor::GetNativeFunctionAddress(AMXFunction* func)
 
 }
 
-
-/*
-uint32_t NativeFunctionProcessor::FindFunction(char *name)
-{
-
-	unsigned int call_addr = 0;
-
-	
-	else
-	{
-		index = 0;
-		amx_FindPublic(__gpAMX, name,&index);
-		//amx_GetPublic(-_gpAMX,index,
-		if (index == 2147483647) return NULL;
-		if (index == 0) return NULL;
-		Log::Warning("Found public function.");
-		char* n = (char*)malloc(255);
-		amx_GetPublicc(__gpAMX,index,n,&call_addr);
-		
-		Log::Warning("2");
-		if (call_addr == 0) return NULL;
-		Log::Warning("Got public function.");
-		//AMX_HEADER *hdr = (AMX_HEADER *) __gpAMX->base;
-		//call_addr = (unsigned int)((AMX_FUNCSTUB *)
-		//((char *)(hdr) + (hdr)->publics + hdr->defsize * index))->address;
-		Log::Warning("return public function.");
-	}
-
-	if(call_addr == 0)//Could not locate the function's address.
-	{
-		Log::Warning("Native function address not found!");
-		return NULL;
-	}
-
-	return call_addr;
-	//return (amx_function_t)call_addr;
-}
-*/
 bool NativeFunctionProcessor::AddFunctionRequestToQue(FunctionRequest* func)
 {
 	if (FunctionRequestQue[MAX_FUNCTIONREQUESTQUE-1] != NULL) 
@@ -466,27 +216,12 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 	if (!DotnetAMXScript) return NULL;
 	if (!request) return NULL;
 	request->data->pos = 0;
-
+	
 	AMXFunction* func = GetFunctionByName(request->name);
 
-	if (func == NULL) return NULL;
+	if (func == NULL) {sprintf("Dotnet Server: Warning: Failed to find native/public function $s.",request->name); return NULL;}
 
-	/*
-	int paramslength = strlen(request->params);
 	
-	if (!func->IsNative)
-	{ // reverse the params order
-		FunctionRequest* newrequest = new FunctionRequest();
-		newrequest->guid = request->guid;
-		newrequest->name = request->name;
-		newrequest->_Client = request->_Client;
-		memcpy(newrequest->params,request->params,strlen(request->params)+1);
-		for (int i=0;i<paramslength;i++)
-		{
-			newrequest->params[i] = request->params[paramslength-i];
-		}
-	}*/
-
 	cell* args = (cell*)calloc(strlen(request->params)+1,4);
 	cell *phys_addr[10]; // 6
 	args[0] = 4 * strlen(request->params);
@@ -540,8 +275,8 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 		{
 			//if (func->IsNative)
 			//{
-				if (request->params[i] == 'v') amx_Allot(func->Script->Address, 1, args + i+1, &phys_addr[vars++]); 
-				if (request->params[i] == 'p') amx_Allot(func->Script->Address, 1, args + i+1, &phys_addr[vars++]);
+				if (request->params[i] == 'v') {amx_Allot(func->Script->Address, 1, args + i+1, &phys_addr[vars++]); request->data->ReadInt32();}
+				if (request->params[i] == 'p') {amx_Allot(func->Script->Address, 1, args + i+1, &phys_addr[vars++]); request->data->ReadString(NULL,0);}
 			/*}
 			else
 			{
