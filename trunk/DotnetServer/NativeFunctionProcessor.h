@@ -71,18 +71,38 @@ public:
 	}
 };
 
-struct AMXScript
+class AMXScript
 {
+public:
 	AMX* Address;
 	char* Name;
+
+	AMXScript()
+	{
+		Name = (char*)calloc(32,1);
+	}
+	~AMXScript()
+	{
+		free(Name);
+	}
 };
 
-struct AMXFunction
+class AMXFunction
 {
+public:
 	bool IsNative;
 	AMXScript* Script;
 	char* Name;
 	int Index;
+
+	AMXFunction()
+	{
+		Name = (char*)calloc(32,1);
+	}
+	~AMXFunction()
+	{
+		free(Name);
+	}
 	//uint32_t Address;
 };
 
@@ -93,16 +113,21 @@ public:
 		{
 			DotnetAMXScript = NULL;
 			functionrequestquelock = false;
+
+			//FunctionRequestQue = (FunctionRequest**)calloc(MAX_FUNCTIONREQUESTQUE,4);
+			//AMXScripts = (AMXScript**)calloc(MAX_AMXSCRIPTS,4);
+			//LoadedFunctions = (AMXFunction**)calloc(MAX_LOADEDFUNCTIONS,4);
 			for (int i=0;i<MAX_FUNCTIONREQUESTQUE;i++) {FunctionRequestQue[i] = NULL;}
 			for (int i=0;i<MAX_AMXSCRIPTS;i++) {AMXScripts[i] = NULL;}
 			for (int i=0;i<MAX_LOADEDFUNCTIONS;i++) {LoadedFunctions[i] = NULL;}
 		}
 
-		static const int MAX_AMXSCRIPTS = 100;
 		AMXScript* DotnetAMXScript;
-		AMXScript* AMXScripts[MAX_AMXSCRIPTS];
 		bool AddAMXScript(AMXScript* script);
-		//bool NativeInit;
+		static const int MAX_AMXSCRIPTS = 100;
+		AMXScript* AMXScripts[MAX_AMXSCRIPTS];
+
+
 		void Init(AMX *pAMX);
 		AMXFunction* FindFunction(AMXScript* script, char *name); // 
 		AMXFunction* FindFunction(char *name); // 
@@ -113,15 +138,16 @@ public:
 		AMXFunction* GetFunctionByName(char *funcname);
 		uint32_t GetNativeFunctionAddress(AMXFunction* func); //
 		static const int MAX_LOADEDFUNCTIONS = 1000;
-
 		AMXFunction* LoadedFunctions[MAX_LOADEDFUNCTIONS]; // a list of all the functions we have already searched for
 		
+
 		FunctionRequest* ProcessFunctionRequest(FunctionRequest* function);
 		bool functionrequestquelock;
-		static const int MAX_FUNCTIONREQUESTQUE = 100;
-		FunctionRequest* FunctionRequestQue[MAX_FUNCTIONREQUESTQUE];
 		bool AddFunctionRequestToQue(FunctionRequest* func);
 		int ProcessFunctionRequestQue();
+		static const int MAX_FUNCTIONREQUESTQUE = 100;
+		FunctionRequest* FunctionRequestQue[MAX_FUNCTIONREQUESTQUE];
+
 
 private:
 

@@ -25,3 +25,6 @@ Known Bugs / Missing features:
 	* No brute force protection.
 	* No unicode support.
 	* Can't return values from native callbacks.
+
+
+	For a great tutorial, which details intallation & usage; see this thread: http://forum.sa-mp.com/showthread.php?t=302838 by TopAz 

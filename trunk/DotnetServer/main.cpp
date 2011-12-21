@@ -74,95 +74,86 @@ PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 	extern "C"
 #endif
 
-const char MAX_STRING = 32; // todo: increase this
-char* cpystr = (char*)calloc(MAX_STRING,1);
-char* ReadCellStringFromPacket(char* packet,int* pos)
-{ // todo: unicode (2 byte per character) strings
-	char count = 0;
-	for (int i=0;i<=MAX_STRING*4;i+=4)
-	{
-		count++;
-		//logprintf("ReadStringFromPacket pos=%d, int=%d",*pos+i,packet[(*pos)+i]);
-		cpystr[(int)(i/4)] = packet[*pos+i];
-		if (packet[*pos+i] == 0) break;
-	}
-	for (int i=count;i<MAX_STRING;i++)
-	{
-		cpystr[i] = 0;
-	}
-	*pos += MAX_STRING*4;
 
+cell AMX_NATIVE_CALL Dotnet_AddInt32ToPacket(AMX * amx, cell * params)
+{
+	//logprintf("Dotnet_AddInt32ToPacket");
+	cell *pPack, *pInt;
+	amx_GetAddr(amx,params[1],&pPack);
+	amx_GetAddr(amx,params[2],&pInt);
+	Packet* pack = (Packet*)*pPack;
+	if (pack->IsValid != 31415) return 0; // bad
+	pack->AddInt32(*pInt);
+	return (cell)pack;
+}
 
-	return cpystr;
+cell AMX_NATIVE_CALL Dotnet_AddFloat32ToPacket(AMX * amx, cell * params)
+{
+	//logprintf("Dotnet_AddFloat32ToPacket");
+	cell *pPack, *pFloat;
+	amx_GetAddr(amx,params[1],&pPack);
+	amx_GetAddr(amx,params[2],&pFloat);
+	Packet* pack = (Packet*)*pPack;
+	if (pack->IsValid != 31415) return 0; // bad
+	pack->AddFloat32(*(float*)pFloat);
+	return (cell)pack;
+}
+
+cell AMX_NATIVE_CALL Dotnet_AddCellStringToPacket(AMX * amx, cell * params)
+{
+	//logprintf("Dotnet_AddCellStringToPacket");
+	cell *pPack, *pStr;
+	amx_GetAddr(amx,params[1],&pPack);
+	amx_GetAddr(amx,params[2],&pStr);
+	Packet* pack = (Packet*)*pPack;
+	if (pack->IsValid != 31415) return 0; // bad
+	pack->AddCellString((char*)pStr);
+	return (cell)pack;
 }
 
 
-float ReadFloat32FromPacket(char* packet,int* pos)
+Packet* tempp = NULL;
+cell AMX_NATIVE_CALL Dotnet_NewPacket(AMX * amx, cell * params)
 {
-	float ret = (float)(packet[*pos] + (packet[*pos+1] << 8) + (packet[*pos+2] << 16) + (packet[*pos+3] << 24)); // todo: check this
-	*pos += 4;
-	return ret;
+	//logprintf("Dotnet_NewPacket");
+	cell *pOpcode = NULL;
+	amx_GetAddr(amx,params[1],&pOpcode);
+	int* opcode = (int*)pOpcode;
+	Packet* pack = new Packet();
+	pack->Opcode = *opcode;
+	pack->IsValid = 31415;
+	tempp = pack;
+	//logprintf("newpack ptr: %d, opcode: %d",pack, *opcode);
+
+	return (uint32_t)pack; // send the memory address of our new packet
 }
 
-int ReadInt32FromPacket(char* packet,int* pos)
+
+cell AMX_NATIVE_CALL Dotnet_SendPacket(AMX * amx, cell * params)
 {
-	int ret = (packet[*pos] + (packet[*pos+1] << 8) + (packet[*pos+2] << 16) + (packet[*pos+3] << 24));
-	*pos += 4;
-	return ret;
-}
-
-char ReadByteFromPacket(char* packet,int* pos)
-{
-	char ret =  (char)ReadInt32FromPacket(packet,pos);
-	return ret;
-}
-
-cell AMX_NATIVE_CALL DotnetServer_ReceiveCallback(AMX * amx, cell * params)
-{
-	cell *pString;
-	amx_GetAddr(amx,params[1],&pString);
-	char* packet = (char*) pString;
-	int packetpos = 0;
-	int size =  ReadInt32FromPacket(packet,&packetpos);
-	char callbackid = ReadByteFromPacket(packet,&packetpos); // the callback opcode
-	char* paramtypes = (char*)calloc(10,1); 
-	memcpy(paramtypes,ReadCellStringFromPacket(packet,&packetpos),10); // the param types (eg. "iisf" for int,int,string,float)
-
-	Packet* pak = new Packet();
-	pak->Opcode = Packet::Callback;
-	pak->AddByte(callbackid);
-	pak->AddString(paramtypes);
-	for (int i=0;i<10;i++)
-	{
-		if (paramtypes[i] == 0) break;
-		if (paramtypes[i] == 'i') {pak->AddInt32(ReadInt32FromPacket(packet,&packetpos));}
-		if (paramtypes[i] == 'f') {pak->AddFloat32(ReadFloat32FromPacket(packet,&packetpos));}
-		if (paramtypes[i] == 's') {pak->AddString(ReadCellStringFromPacket(packet,&packetpos));}
-	}
-
-	if (callbackid == 0)
-	{
-		logprintf("DotnetServer Warning! Invalid Callback received.");
-	}
-	else
-	{
-		MainServer->PakSender->SendCallbackToAll(pak);
-
-	}
-
-	free(paramtypes);
-	delete(pak);
-
+	//logprintf("Dotnet_SendPacket");
+	cell *pPack;
+	amx_GetAddr(amx,params[1],&pPack);
+	Packet* pack = (Packet*)*pPack;
+	if (pack == NULL) return 0;
+	if (pack->IsValid != 31415) return 0; // bad hack to ensure pawn script writers dont try to send bad packet
+	MainServer->PakSender->SendPacketToAll(pack);
+	pack->IsValid = 0; // hacks, yay
+	delete(pack);
 	return 1;
 }
 
+
 const AMX_NATIVE_INFO DotnetServerNatives[] = 
 {
-	{"DotnetServer_ReceiveCallback", DotnetServer_ReceiveCallback},
+	{"Dotnet_NewPacket", Dotnet_NewPacket},
+	{"Dotnet_SendPacket", Dotnet_SendPacket},
+	{"Dotnet_AddInt32ToPacket", Dotnet_AddInt32ToPacket},
+	{"Dotnet_AddFloat32ToPacket", Dotnet_AddFloat32ToPacket},
+	{"Dotnet_AddCellStringToPacket", Dotnet_AddCellStringToPacket},
+	//{"Dotnet_AddPackedStringToPacket", Dotnet_AddStringToPacket},
 	{NULL,NULL}
 };
-
-	
 
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad( AMX *amx )

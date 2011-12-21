@@ -64,7 +64,6 @@ namespace Samp.Client
                 else {server.IsAuthenticated = false; Log.Debug("Auth failed.");}
 	        }
 	        if (!server.IsAuthenticated) return;
-            //Log.Debug("Packet received2");
 	        if (pak.Opcode == (byte)Packet.Opcodes.Ping)
 	        {
                 _Client.PakSender.SendPingReply(server);
@@ -72,20 +71,33 @@ namespace Samp.Client
 
             if (pak.Opcode == (byte)Packet.Opcodes.Callback)
             {
-                byte callbackid = pak.ReadByte();
-                string paramtypes = pak.ReadString();
-                Log.Debug("Callback(" + callbackid + ") params: " + paramtypes);
+                string callbackname = pak.ReadString();
+                Log.Debug("Callback Received: " + callbackname);
 
                 byte[] callbackdata = pak.ReadData(pak.Length - pak.Pos);
-                //int datastart = (1 + (paramtypes.Length + 1));
-                //byte[] callbackdata = new byte[pak.Length - datastart];
-                //for (int i = 0; i < callbackdata.Count(); i++) { callbackdata[i] = pak.Data[i + datastart]; }
-                //CallbackProcessor.ProcessCallback(callbackid,paramtypes,callbackdata);
 
                 DataStream sdata = new DataStream();
                 sdata.Data = callbackdata;
-                InternalEvents.FireOnCallbackReceived(null, new OnCallbackReceivedEventArgs(server,_Client, CallbackProcessor.GetCallbackById(callbackid), sdata));
+                sdata.Length = (ushort)callbackdata.Length;
+                InternalEvents.FireOnCallbackReceived(null, new OnCallbackReceivedEventArgs(server,_Client,callbackname,sdata));
                  
+                //return;
+            }
+
+            if (pak.Opcode == (byte)Packet.Opcodes.FunctionRequest)
+            {
+                Log.Debug("function request received");
+                string funcname = pak.ReadString();
+                string callbackname = pak.ReadString();
+                string paramtypes = pak.ReadString();
+                byte[] funcdata = pak.ReadData(pak.Length - pak.Pos);
+
+                DataStream sdata = new DataStream();
+                sdata.Data = funcdata;
+                sdata.Length = (ushort)funcdata.Length;
+                Log.Debug("funcreq: " + funcname);
+                InternalEvents.FireOnFunctionRequestReceived(null, new OnFunctionRequestReceivedEventArgs(server, _Client, funcname,callbackname,paramtypes,sdata));
+
                 //return;
             }
 

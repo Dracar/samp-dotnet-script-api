@@ -97,7 +97,7 @@ namespace Samp.API
         public static void OnCallbackReceived(object sender, OnCallbackReceivedEventArgs args)
         {
             args.Data.Pos = 0;
-            if (String.Compare(CallbackProcessor.GetCallbackById(args.CB.Opcode).Name, "OnDialogResponse") == 0)
+            if (String.Compare(args.CallbackName, "OnDialogResponse") == 0)
             {
                 Samp.Util.Log.Debug("OnDialogResponse");
                 int playerid = args.Data.ReadInt32();

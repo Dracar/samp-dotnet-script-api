@@ -31,9 +31,8 @@ namespace Samp.Scripts.ExampleScripts
         public void OnCallbackReceived(object sender, Samp.Client.OnCallbackReceivedEventArgs args)
         {
             args.Data.Pos = 0; // Note: THIS IS REQUIRED; a method that previously subscribed to OnCallbackReceived could have left it at any arbitrary position in the data buffer
-            string callbackname = args.CB.Name;
 
-            if (String.Compare(callbackname, "OnPlayerCommandText") == 0) 
+            if (String.Compare(args.CallbackName, "OnPlayerCommandText") == 0) 
             {
                 int playerid = args.Data.ReadInt32();
                 string cmdtext = args.Data.ReadString();

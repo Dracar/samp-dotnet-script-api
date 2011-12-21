@@ -6,12 +6,9 @@
 
 
 #include <a_samp>
+#include "Dotnet.inc"
 
 new HandleCommands = true;
-
-const MAX_STRING = 32;
-const MAX_PACKET = (MAX_STRING*3) + 20; // largest callback we will need to send
-native DotnetServer_ReceiveCallback(packet[MAX_PACKET]); // our callback commands are sent as cell(4bytes) array
 
 forward DotnetFSInit();
 public DotnetFSInit()
@@ -19,620 +16,425 @@ public DotnetFSInit()
 	// stuff
 }
 
-enum Callback
-{
-	opcode,
-	name[32],
-	paramtypes[8]
-};
-
-new Callbacks[][Callback] =
-{
-	{0,"NULL",""},
-	{1,"OnEnterExitModShop","iii"},
-	{2,"OnFilterScriptExit",""},
-	{3,"OnFilterScriptInit",""},
-	{4,"OnGameModeExit",""},
-	{5,"OnGameModeInit",""},
-	{6,"OnObjectMoved","i"},
-	{7,"OnPlayerClickPlayer","iii"},
-	{8,"OnPlayerCommandText","is"},
-	{9,"OnPlayerConnect","i"},
-	{10,"OnPlayerDeath","iii"},
-	{11,"OnPlayerDisconnect","ii"},
-	{12,"OnPlayerEnterCheckpoint","i"},
-	{13,"OnPlayerEnterRaceCheckpoint","i"},
-	{14,"OnPlayerEnterVehicle","iii"},
-	{15,"OnPlayerExitVehicle","ii"},
-	{16,"OnPlayerExitedMenu","i"},
-	{17,"OnPlayerGiveDamage","iifi"},
-	{18,"OnPlayerInteriorChange","iii"},
-	{19,"OnPlayerKeyStateChange","iii"},
-	{20,"OnPlayerLeaveCheckpoint","i"},
-	{21,"OnPlayerLeaveRaceCheckpoint","i"},
-	{22,"OnPlayerObjectMoved","ii"},
-	{23,"OnPlayerPickUpPickup","ii"},
-	{24,"OnPlayerPrivmsg","iis"},
-	{25,"OnPlayerRequestClass","ii"},
-	{26,"OnPlayerRequestSpawn","i"},
-	{27,"OnPlayerSelectedMenuRow","ii"},
-	{28,"OnPlayerSpawn","i"},
-	{29,"OnPlayerStateChange","iii"},
-	{30,"OnPlayerStreamIn","ii"},
-	{31,"OnPlayerStreamOut","ii"},
-	{32,"OnPlayerTakeDamage","iifi"},
-	{33,"OnPlayerTakeDamage RU","iifi"},
-	{34,"OnPlayerTeamPrivmsg","is"},
-	{35,"OnPlayerText","is"},
-	{36,"OnPlayerUpdate","i"},
-	{37,"OnRconCommand","s"},
-	{38,"OnRconLoginAttempt","ssi"},
-	{39,"OnUnoccupiedVehicleUpdate","iii"}, // Important Note: This callback is called very frequently per second per unoccupied vehicle.
-	{40,"OnVehicleDamageStatusUpdate","ii"},
-	{41,"OnVehicleDeath","i"},
-	{42,"OnVehicleMod","iii"},
-	{43,"OnVehiclePaintjob","iii"},
-	{44,"OnVehicleRespray","iiii"},
-	{45,"OnVehicleSpawn","i"},
-	{46,"OnVehicleStreamIn","ii"},
-	{47,"OnVehicleStreamOut","ii"},
-	{48,"OnDialogResponse","iiiis"}
-};
-
-GetCallbackByName(sname[32])
-{
-	new size = 49;//sizeof(Callbacks[][]);
-	for(new i=0;i<size;i++)
-	{
-		if (strcmp(Callbacks[i][name],sname) == 0) return i;
-	}
-	return 0;
-}
-
-GetCallbackById(id)
-{
-	new size = 49;//sizeof(Callbacks[][]);
-	for(new i=0;i<size;i++)
-	{
-		if (Callbacks[i][opcode] == id) return i;
-	}
-	return 0;
-}
-
-new CallbackPacket[MAX_PACKET];
-new CallbackPacketPos = 1; // first 4 bytes is size
-
-AddInt32ToCallbackPacket(int32)
-{
-    CallbackPacket[CallbackPacketPos] = int32;
-    CallbackPacketPos += 1;
-}
-AddStringToCallbackPacket(str[])
-{
-	for (new i=0;i<strlen(str);i++)
-	{
-    	CallbackPacket[CallbackPacketPos+i] = str[i];
-    }
-   	for (new i=strlen(str);i<MAX_STRING;i++)
-	{
-    	CallbackPacket[CallbackPacketPos+i] = 0; // null remaining chars
-    }
-    //printf("pawn addstr %d %s", strlen(str), str);
-    CallbackPacketPos += MAX_STRING;
-}
-
-ClearCallbackPacket()
-{
-	for (new i=0;i<MAX_PACKET;i++)
-	{
-    	CallbackPacket[i] = 0; // null the whole packet
-    }
-    CallbackPacketPos = 1;
-}
-
-SendCallbackPacket()
-{ // sends the packet to our c++ plugin
-	for (new i=CallbackPacketPos;i<MAX_PACKET;i++)
-	{
-	    CallbackPacket[i] = 0; // null all the remaining bytes, just incase
-	}
-	new paksize = CallbackPacketPos+1;
-	CallbackPacketPos = 0;
-	AddInt32ToCallbackPacket(paksize);
-	DotnetServer_ReceiveCallback(CallbackPacket);
-}
 
 
 
 
 
-
+// -------- Callbacks ----------
 
 public OnEnterExitModShop(playerid, enterexit, interiorid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnEnterExitModShop")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(enterexit);
-    AddInt32ToCallbackPacket(interiorid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnEnterExitModShop");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,enterexit);
+    Dotnet_AddInt32ToPacket(pak,interiorid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnFilterScriptExit()
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnFilterScriptExit")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnFilterScriptExit");
+    Dotnet_SendPacket(pak);
     return 1;
 }
+
 public OnFilterScriptInit()
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnFilterScriptInit")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    SendCallbackPacket();
+	new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnFilterScriptInit");
+    Dotnet_SendPacket(pak);
     return 1;
 }
+
 public OnGameModeExit()
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnGameModeExit")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnGameModeExit");
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnGameModeInit()
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnGameModeInit")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnGameModeInit");
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnObjectMoved(objectid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnObjectMoved")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(objectid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnObjectMoved");
+    Dotnet_AddInt32ToPacket(pak,objectid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerClickPlayer(playerid, clickedplayerid, source)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerClickPlayer")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(clickedplayerid);
-    AddInt32ToCallbackPacket(source);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerClickPlayer");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,clickedplayerid);
+    Dotnet_AddInt32ToPacket(pak,source);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 
 public OnPlayerCommandText(playerid, cmdtext[])
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerCommandText")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddStringToCallbackPacket(cmdtext);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerCommandText");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddCellStringToPacket(pak,cmdtext);
+    Dotnet_SendPacket(pak);
     if (HandleCommands) return 1;
     return 0;
 }
 
 public OnPlayerConnect(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerConnect")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerConnect");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerDeath(playerid, killerid, reason)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerDeath")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(killerid);
-    AddInt32ToCallbackPacket(reason);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerDeath");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,killerid);
+    Dotnet_AddInt32ToPacket(pak,reason);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerDisconnect(playerid, reason)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerDisconnect")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(reason);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerDisconnect");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,reason);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerEnterCheckpoint(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerEnterCheckpoint")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerEnterCheckpoint");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerEnterRaceCheckpoint(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerEnterRaceCheckpoint")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerEnterRaceCheckpoint");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerEnterVehicle")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(vehicleid);
-    AddInt32ToCallbackPacket(ispassenger);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerEnterVehicle");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,vehicleid);
+    Dotnet_AddInt32ToPacket(pak,ispassenger);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerExitVehicle(playerid, vehicleid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerExitVehicle")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(vehicleid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerExitVehicle");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,vehicleid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerExitedMenu(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerExitedMenu")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerExitedMenu");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 
-/*
-public OnPlayerGiveDamage(param0_i, param1_i, param2_f, param3_i)
-{
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerGiveDamage")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(param0_i);
-    AddInt32ToCallbackPacket(param1_i);
-    AddFloat32ToCallbackPacket(param2_f);
-    AddInt32ToCallbackPacket(param3_i);
-    SendCallbackPacket();
-    return 1;
-}*/
-
 public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerInteriorChange")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(newinteriorid);
-    AddInt32ToCallbackPacket(oldinteriorid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerInteriorChange");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,newinteriorid);
+    Dotnet_AddInt32ToPacket(pak,oldinteriorid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerKeyStateChange")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(newkeys);
-    AddInt32ToCallbackPacket(oldkeys);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerKeyStateChange");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,newkeys);
+    Dotnet_AddInt32ToPacket(pak,oldkeys);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerLeaveCheckpoint(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerLeaveCheckpoint")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerLeaveCheckpoint");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerLeaveRaceCheckpoint(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerLeaveRaceCheckpoint")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerLeaveRaceCheckpoint");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 
 
 public OnPlayerObjectMoved(playerid, objectid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerObjectMoved")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(objectid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerObjectMoved");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,objectid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerPickUpPickup(playerid, pickupid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerPickUpPickup")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(pickupid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerPickUpPickup");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,pickupid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 
-/*
-public OnPlayerPrivmsg(playerid, param1_i, param2_s)
-{
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerPrivmsg")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(param1_i);
-    AddStringToCallbackPacket(param2_s);
-    SendCallbackPacket();
-    return 1;
-}
-*/
 public OnPlayerRequestClass(playerid, classid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerRequestClass")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(classid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerRequestClass");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,classid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerRequestSpawn(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerRequestSpawn")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerRequestSpawn");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerSelectedMenuRow(playerid, row)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerSelectedMenuRow")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(row);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerSelectedMenuRow");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,row);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerSpawn(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerSpawn")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerSpawn");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerStateChange(playerid, newstate, oldstate)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerStateChange")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(newstate);
-    AddInt32ToCallbackPacket(oldstate);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerStateChange");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,newstate);
+    Dotnet_AddInt32ToPacket(pak,oldstate);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerStreamIn(playerid, forplayerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerStreamIn")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(forplayerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerStreamIn");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,forplayerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnPlayerStreamOut(playerid, forplayerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerStreamOut")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(forplayerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerStreamOut");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,forplayerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
-/*
-public OnPlayerTakeDamage(playerid, param1_i, param2_f, param3_i)
-{
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerTakeDamage")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(param1_i);
-    AddFloat32ToCallbackPacket(param2_f);
-    AddInt32ToCallbackPacket(param3_i);
-    SendCallbackPacket();
-    return 1;
-}
-public OnPlayerTakeDamageRU(playerid, param1_i, param2_f, param3_i)
-{
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerTakeDamageRU")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(param1_i);
-    AddFloat32ToCallbackPacket(param2_f);
-    AddInt32ToCallbackPacket(param3_i);
-    SendCallbackPacket();
-    return 1;
-}
-*/
-/*
-public OnPlayerTeamPrivmsg(playerid, param1_s)
-{
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerTeamPrivmsg")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddStringToCallbackPacket(param1_s);
-    SendCallbackPacket();
-    return 1;
-}
-*/
 public OnPlayerText(playerid, text[])
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerText")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddStringToCallbackPacket(text);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerText");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddCellStringToPacket(pak,text);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 
 public OnPlayerUpdate(playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnPlayerUpdate")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerUpdate");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnRconCommand(cmd[])
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnRconCommand")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddStringToCallbackPacket(cmd);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnRconCommand");
+    Dotnet_AddCellStringToPacket(pak,cmd);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnRconLoginAttempt(ip[], password[], success)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnRconLoginAttempt")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddStringToCallbackPacket(ip);
-    AddStringToCallbackPacket(password);
-    AddInt32ToCallbackPacket(success);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnRconLoginAttempt");
+    Dotnet_AddCellStringToPacket(pak,ip);
+    Dotnet_AddCellStringToPacket(pak,password);
+    Dotnet_AddInt32ToPacket(pak,success);
+    Dotnet_SendPacket(pak);
     return 1;
-}/*
-public OnUnoccupiedVehicleUpdate(param0_i, param1_i, param2_i)
-{
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnUnoccupiedVehicleUpdate")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(param0_i);
-    AddInt32ToCallbackPacket(param1_i);
-    AddInt32ToCallbackPacket(param2_i);
-    SendCallbackPacket();
-    return 1;
-}*/
+}
 public OnVehicleDamageStatusUpdate(vehicleid, playerid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnVehicleDamageStatusUpdate")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(vehicleid);
-    AddInt32ToCallbackPacket(playerid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnVehicleDamageStatusUpdate");
+    Dotnet_AddInt32ToPacket(pak,vehicleid);
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 public OnVehicleDeath(vehicleid)
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnVehicleDeath")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(vehicleid);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnVehicleDeath");
+    Dotnet_AddInt32ToPacket(pak,vehicleid);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
-    ClearCallbackPacket();
-    new callbackid = Callbacks[GetCallbackByName("OnDialogResponse")][opcode];
-    AddInt32ToCallbackPacket(callbackid);
-    AddStringToCallbackPacket(Callbacks[GetCallbackById(callbackid)][paramtypes]);
-    AddInt32ToCallbackPacket(playerid);
-    AddInt32ToCallbackPacket(dialogid);
-    AddInt32ToCallbackPacket(response);
-    AddInt32ToCallbackPacket(listitem);
-    AddStringToCallbackPacket(inputtext);
-    SendCallbackPacket();
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnDialogResponse");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,dialogid);
+    Dotnet_AddInt32ToPacket(pak,response);
+    Dotnet_AddInt32ToPacket(pak,listitem);
+    Dotnet_AddCellStringToPacket(pak,inputtext);
+    Dotnet_SendPacket(pak);
     return 1;
 }
 
 
 
 
-// --------------------------------------------
-// One huge function calling most of SA-MP's functions;
-// --------------------------------------------
+
+
+
+
+
+/*
+public OnUnoccupiedVehicleUpdate(param0_i, param1_i, param2_i)
+{
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnUnoccupiedVehicleUpdate");
+    Dotnet_AddInt32ToPacket(pak,param0_i);
+    Dotnet_AddInt32ToPacket(pak,param1_i);
+    Dotnet_AddInt32ToPacket(pak,param2_i);
+    Dotnet_SendPacket(pak);
+    return 1;
+}*
+
+
+public OnPlayerTakeDamage(playerid, param1_i, param2_f, param3_i)
+{
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerTakeDamage");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,param1_i);
+    AddFloat32ToPacket(param2_f);
+    Dotnet_AddInt32ToPacket(pak,param3_i);
+    Dotnet_SendPacket(pak);
+    return 1;
+}
+public OnPlayerTakeDamageRU(playerid, param1_i, param2_f, param3_i)
+{
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerTakeDamageRU");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,param1_i);
+    AddFloat32ToPacket(param2_f);
+    Dotnet_AddInt32ToPacket(pak,param3_i);
+    Dotnet_SendPacket(pak);
+    return 1;
+}
+public OnPlayerTeamPrivmsg(playerid, param1_s)
+{
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerTeamPrivmsg");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddCellStringToPacket(pak,param1_s);
+    Dotnet_SendPacket(pak);
+    return 1;
+}
+*
+
+
+public OnPlayerPrivmsg(playerid, param1_i, param2_s)
+{
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerPrivmsg");
+    Dotnet_AddInt32ToPacket(pak,playerid);
+    Dotnet_AddInt32ToPacket(pak,param1_i);
+    Dotnet_AddCellStringToPacket(pak,param2_s);
+    Dotnet_SendPacket(pak);
+    return 1;
+}
+*
+
+
+public OnPlayerGiveDamage(param0_i, param1_i, param2_f, param3_i)
+{
+    new pak = Dotnet_NewPacket(Packet_Callback);
+    Dotnet_AddCellStringToPacket(pak,"OnPlayerGiveDamage");
+    Dotnet_AddInt32ToPacket(pak,param0_i);
+    Dotnet_AddInt32ToPacket(pak,param1_i);
+    AddFloat32ToPacket(param2_f);
+    Dotnet_AddInt32ToPacket(pak,param3_i);
+    Dotnet_SendPacket(pak);
+    return 1;
+}*
+*/
+
+
+
+// -------- Functions ----------
+
     forward InvokeFunction();
     public InvokeFunction()
     {
@@ -830,20 +632,5 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             return 1;
     }
 	
-	
-	forward TestNativeForward();
-    public TestNativeForward()
-    {
-		print("TestNativeForward");
-    	//SendClientMessageToAll(colour, msg);
-    }
-    
-    forward TestNativeForward2(msg[], msg2[],msg3[]);
-    public TestNativeForward2(msg[],msg2[],msg3[])
-    {
-		printf("TestNativeForward2 %s - %s - %s",msg,msg2,msg3);
-    	//SendClientMessageToAll(colour, msg);
-    }
-    
 
  

@@ -45,10 +45,13 @@ public:
 		PacketBuilder();
 		void SendPingRequest(Client* client);
 		void SendAuthReply(Client* client,bool success);
-		void SendCallbackToAll(Packet* sp);
-		void SendCallback(Client* client, Packet* sp);
 		void SendFunctionResponse(Client* client,FunctionRequest* function);
-		
+
+		/*void SendCallbackToAll(Packet* sp);
+		void SendCallback(Client* client, Packet* sp);
+		void SendFunctionRequestToAll(Packet* sp);
+		void SendFunctionRequest(Client* client, Packet* sp);*/
+		void SendPacketToAll(Packet* sp);
 
 		void SendTest(Client* client);
         

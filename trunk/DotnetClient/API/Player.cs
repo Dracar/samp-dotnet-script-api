@@ -194,8 +194,8 @@ namespace Samp.API
         public static void OnCallbackReceived(object sender, OnCallbackReceivedEventArgs args)
         {
             args.Data.Pos = 0;
-            Log.Debug("OnCallbackReceived: " + args.CB.Name);
-            if (String.Compare(CallbackProcessor.GetCallbackById(args.CB.Opcode).Name, "OnPlayerConnect") == 0)
+            Log.Debug("OnCallbackReceived: " + args.CallbackName);
+            if (String.Compare(args.CallbackName, "OnPlayerConnect") == 0)
             {
                 int playerid = args.Data.ReadInt32();
                 Player player = World.GetPlayerById(playerid);
@@ -203,7 +203,7 @@ namespace Samp.API
                 if (OnPlayerConnect != null) OnPlayerConnect(null, new OnPlayerConnectEventArgs(player));
             }
 
-            if (String.Compare(CallbackProcessor.GetCallbackById(args.CB.Opcode).Name, "OnPlayerDisconnect") == 0)
+            if (String.Compare(args.CallbackName, "OnPlayerDisconnect") == 0)
             {
                 int playerid = args.Data.ReadInt32();
                 Player player = World.GetPlayerById(playerid);
@@ -212,7 +212,7 @@ namespace Samp.API
                 RemovePlayer(player);
             }
 
-            if (String.Compare(CallbackProcessor.GetCallbackById(args.CB.Opcode).Name, "OnPlayerCommandText") == 0)
+            if (String.Compare(args.CallbackName, "OnPlayerCommandText") == 0)
             {
                 int playerid = args.Data.ReadInt32();
                 Samp.API.Player player = Player.GetPlayerByID(playerid);
@@ -220,7 +220,7 @@ namespace Samp.API
                 if (OnPlayerCommandText != null) OnPlayerCommandText(null, new OnPlayerCommandTextEventArgs(player, command));
             }
 
-            if (String.Compare(CallbackProcessor.GetCallbackById(args.CB.Opcode).Name, "OnPlayerKeyStateChange") == 0)
+            if (String.Compare(args.CallbackName, "OnPlayerKeyStateChange") == 0)
             {
                 int playerid = args.Data.ReadInt32();
                 //uint newkeys = args.Data.ReadUInt32(); // no...
@@ -246,7 +246,7 @@ namespace Samp.API
                 }
             }
 
-            if (String.Compare(CallbackProcessor.GetCallbackById(args.CB.Opcode).Name, "OnPlayerDeath") == 0)
+            if (String.Compare(args.CallbackName, "OnPlayerDeath") == 0)
             {
                 int playerid = args.Data.ReadInt32();
                 int killerid = args.Data.ReadInt32();

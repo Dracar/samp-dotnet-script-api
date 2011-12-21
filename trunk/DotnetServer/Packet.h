@@ -44,6 +44,7 @@ public:
 		Packet()
 		{
 			Opcode = 0;
+			IsValid = 31415; // fuck this shit, bad bad hackish way to make sure pawn scripts dont try to use a disposed packet
 		}
 
 		char Opcode;
@@ -66,6 +67,8 @@ public:
 			FunctionReply = 0x07,
 			Test = 0x0A
 		};
+
+		int IsValid;
 
         
 private:

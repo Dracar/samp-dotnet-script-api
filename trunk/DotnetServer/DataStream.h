@@ -132,6 +132,25 @@ public:
 			Length += length;
 		}
 
+		void AddCellString(char* s)
+		{ 
+			int len = 0;
+			for (int i=0;i<1024;i+=4)
+			{
+				len++;
+				if (s[i] == 0) break;
+			}
+			if (len == 1023) {logprintf("DotnetServer: Warning: String too long."); AddString("TRUNCATED"); return;}
+
+			AddUShort(len);
+			for (int i=0;i<len*4;i+=4)
+			{
+				Data[pos] = s[i];
+				pos++;
+				Length++;
+			}
+		}
+
 		char ReadByte()
 		{
 			pos += 1;
@@ -166,7 +185,7 @@ public:
 
 		char* ReadString(char* dest, int size)
 		{
-			if (dest == NULL) return NULL;
+			//if (dest == NULL) return NULL;
 			int slen = ReadUShort();
 			for (int i=0;(i<size&&i<slen);i++)
 			{
