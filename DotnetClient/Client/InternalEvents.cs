@@ -101,15 +101,16 @@ namespace Samp.Client
         public string FunctionName;
         public string CallbackName;
         public string Paramtypes;
-        public DataStream Data;
-        public OnFunctionRequestReceivedEventArgs(Server server, Client client, string funcname, string callbackname, string paramtypes, DataStream data)
+        //public DataStream Data;
+        public Object[] Args;
+        public OnFunctionRequestReceivedEventArgs(Server server, Client client, string funcname, string callbackname, string paramtypes, Object[] args)
         {
             Server = server;
             Client = client;
             FunctionName = funcname;
             CallbackName = callbackname;
             Paramtypes = paramtypes;
-            Data = data;
+            Args = args;
         }
     };
 

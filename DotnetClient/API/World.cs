@@ -108,18 +108,18 @@ namespace Samp.API
 
         public static Vehicle CreateVehicle(int modelid, Vector3 pos, float angle, int color1, int color2, int respawn_delay)
         {
-            int id = NativeFunctionRequestor.RequestFunction("CreateVehicle", "iffffiii", modelid, pos.X, pos.Y, pos.Z, angle, color1, color2, respawn_delay);
+            int id = NativeFunctionRequestor.RequestFunctionWithArgs("CreateVehicle", "iffffiii", modelid, pos.X, pos.Y, pos.Z, angle, color1, color2, respawn_delay);
             return Vehicle.GetVehicleByID(id);
         }
 
         public static void DestroyVehicle(Vehicle vehicle)
         {
-            if (Vehicle.RemoveVehicle(vehicle)) NativeFunctionRequestor.RequestFunction("DestroyVehicle", "i", vehicle.ID);
+            if (Vehicle.RemoveVehicle(vehicle)) NativeFunctionRequestor.RequestFunctionWithArgs("DestroyVehicle", "i", vehicle.ID);
         }
 
         public static GameObject CreateObject(int modelid, Vector3 pos, Vector3 rot, float drawdistance)
         {
-            int id = NativeFunctionRequestor.RequestFunction("CreateObject", "ifffffff", modelid, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z, drawdistance);
+            int id = NativeFunctionRequestor.RequestFunctionWithArgs("CreateObject", "ifffffff", modelid, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z, drawdistance);
             GameObject obj = GameObject.GetObjectByID(id);
             obj.Model = modelid;
             return obj;
@@ -127,7 +127,7 @@ namespace Samp.API
 
         public static void DestroyObject(GameObject obj)
         {
-            if (GameObject.RemoveObject(obj)) NativeFunctionRequestor.RequestFunction("DestroyObject", "i", obj.ID);
+            if (GameObject.RemoveObject(obj)) NativeFunctionRequestor.RequestFunctionWithArgs("DestroyObject", "i", obj.ID);
         }
 
         public static GameObject[] GetObjectsInArea(Vector3 wpos, float distance)
@@ -166,7 +166,7 @@ namespace Samp.API
             func.data.AddFloat32(size.X);
             func.data.AddFloat32(size.Y);
             NativeFunctionRequestor fr = new NativeFunctionRequestor(Client.Client.Instance);
-            func = fr.RequestFunction(Server.Instance, func);
+            func = fr.RequestFunctionWithArgs(Server.Instance, func);
             Samp.Util.Log.Debug("Menu created: " + func.response);
             Menu m = Menu.GetMenuByID(func.response);
             if (m == null) m = new Menu(func.response, title);
@@ -187,7 +187,7 @@ namespace Samp.API
             func.args = "i";
             func.data.AddInt32(menu.ID);
             NativeFunctionRequestor fr = new NativeFunctionRequestor(Client.Client.Instance);
-            fr.RequestFunction(Server.Instance, func);
+            fr.RequestFunctionWithArgs(Server.Instance, func);
             lock (Menus)
             {
                 for (int i = 0; i < Menus.Count(); i++)

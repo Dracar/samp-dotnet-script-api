@@ -139,14 +139,14 @@ namespace Samp.API
                     FloatRef x = new FloatRef(0.0F);
                     FloatRef y = new FloatRef(0.0F);
                     FloatRef z = new FloatRef(0.0F); ;
-                    NativeFunctionRequestor.RequestFunction("GetObjectPos", "ivvv", ID, x, y, z);
+                    NativeFunctionRequestor.RequestFunctionWithArgs("GetObjectPos", "ivvv", ID, x, y, z);
                     _pos = new Vector3(x.Value, y.Value, z.Value);
                 }
                 return _pos;
             }
             set
             {
-                NativeFunctionRequestor.RequestFunction("SetObjectPos", "ifff", ID, value.X, value.Y, value.Z);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetObjectPos", "ifff", ID, value.X, value.Y, value.Z);
                 if (OnObjectMoved != null) OnObjectMoved(this, new OnObjectMovedEventArgs(this, value, Pos, Rot, Rot));
                 _pos = value;
             }
@@ -165,14 +165,14 @@ namespace Samp.API
                     FloatRef x = new FloatRef(0.0F);
                     FloatRef y = new FloatRef(0.0F);
                     FloatRef z = new FloatRef(0.0F); ;
-                    NativeFunctionRequestor.RequestFunction("GetObjectRot", "ivvv", ID, x, y, z);
+                    NativeFunctionRequestor.RequestFunctionWithArgs("GetObjectRot", "ivvv", ID, x, y, z);
                     _rot = new Vector3(x.Value, y.Value, z.Value);
                 }
                 return _rot;
             }
             set
             {
-                NativeFunctionRequestor.RequestFunction("SetObjectRot", "ifff", ID, value.X, value.Y, value.Z);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetObjectRot", "ifff", ID, value.X, value.Y, value.Z);
                 if (OnObjectMoved != null) OnObjectMoved(this, new OnObjectMovedEventArgs(this, Pos, Pos, value, Rot));
                 _rot = value;
             }

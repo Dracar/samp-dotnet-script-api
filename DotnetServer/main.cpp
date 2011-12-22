@@ -70,32 +70,41 @@ PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 }
 
 
+
 #if defined __cplusplus
 	extern "C"
 #endif
 
 
+
+
+
+
+
+
+
+
 cell AMX_NATIVE_CALL Dotnet_AddInt32ToPacket(AMX * amx, cell * params)
 {
 	//logprintf("Dotnet_AddInt32ToPacket");
-	cell *pPack, *pInt;
+	cell *pPack;
 	amx_GetAddr(amx,params[1],&pPack);
-	amx_GetAddr(amx,params[2],&pInt);
+	int i = params[2];
 	Packet* pack = (Packet*)*pPack;
-	if (pack->IsValid != 31415) return 0; // bad
-	pack->AddInt32(*pInt);
+	if (pack == NULL) return NULL;
+	pack->AddInt32(i);
 	return (cell)pack;
 }
 
 cell AMX_NATIVE_CALL Dotnet_AddFloat32ToPacket(AMX * amx, cell * params)
 {
 	//logprintf("Dotnet_AddFloat32ToPacket");
-	cell *pPack, *pFloat;
+	cell *pPack;
 	amx_GetAddr(amx,params[1],&pPack);
-	amx_GetAddr(amx,params[2],&pFloat);
+	float f = amx_ctof(params[2]);
 	Packet* pack = (Packet*)*pPack;
-	if (pack->IsValid != 31415) return 0; // bad
-	pack->AddFloat32(*(float*)pFloat);
+	if (pack == NULL) return NULL;
+	pack->AddFloat32(f);
 	return (cell)pack;
 }
 
@@ -106,7 +115,7 @@ cell AMX_NATIVE_CALL Dotnet_AddCellStringToPacket(AMX * amx, cell * params)
 	amx_GetAddr(amx,params[1],&pPack);
 	amx_GetAddr(amx,params[2],&pStr);
 	Packet* pack = (Packet*)*pPack;
-	if (pack->IsValid != 31415) return 0; // bad
+	if (pack == NULL) return NULL;
 	pack->AddCellString((char*)pStr);
 	return (cell)pack;
 }
@@ -115,17 +124,13 @@ cell AMX_NATIVE_CALL Dotnet_AddCellStringToPacket(AMX * amx, cell * params)
 Packet* tempp = NULL;
 cell AMX_NATIVE_CALL Dotnet_NewPacket(AMX * amx, cell * params)
 {
-	//logprintf("Dotnet_NewPacket");
-	cell *pOpcode = NULL;
-	amx_GetAddr(amx,params[1],&pOpcode);
-	int* opcode = (int*)pOpcode;
+	int opcode = params[1];
 	Packet* pack = new Packet();
-	pack->Opcode = *opcode;
-	pack->IsValid = 31415;
+	pack->Opcode = opcode;
 	tempp = pack;
-	//logprintf("newpack ptr: %d, opcode: %d",pack, *opcode);
+	//logprintf("newpack ptr: %d, opcode: %d",pack, opcode);
 
-	return (uint32_t)pack; // send the memory address of our new packet
+	return (cell)pack; // send the memory address of our new packet
 }
 
 
@@ -136,24 +141,123 @@ cell AMX_NATIVE_CALL Dotnet_SendPacket(AMX * amx, cell * params)
 	amx_GetAddr(amx,params[1],&pPack);
 	Packet* pack = (Packet*)*pPack;
 	if (pack == NULL) return 0;
-	if (pack->IsValid != 31415) return 0; // bad hack to ensure pawn script writers dont try to send bad packet
 	MainServer->PakSender->SendPacketToAll(pack);
-	pack->IsValid = 0; // hacks, yay
 	delete(pack);
+	*pPack = 0;
 	return 1;
 }
+
+cell AMX_NATIVE_CALL Dotnet_DeletePacket(AMX * amx, cell * params)
+{
+	cell *pPack;
+	amx_GetAddr(amx,params[1],&pPack);
+	Packet* pack = (Packet*)*pPack;
+	if (pack == NULL) return 0;
+	delete(pack);
+	*pPack = 0;
+	return 1;
+}
+
+cell AMX_NATIVE_CALL Dotnet_SetPacketPosition(AMX * amx, cell * params)
+{
+	cell *pPack, *pPos;
+	amx_GetAddr(amx,params[1],&pPack);
+	amx_GetAddr(amx,params[2],&pPos);
+	Packet* pack = (Packet*)*pPack;
+	if (pack == NULL) return 0;
+	pack->pos = (unsigned short)*pPos;
+	return 1;
+}
+
+cell AMX_NATIVE_CALL Dotnet_GetPacketPosition(AMX * amx, cell * params)
+{
+	cell *pPack;
+	amx_GetAddr(amx,params[1],&pPack);
+	Packet* pack = (Packet*)*pPack;
+	if (pack == NULL) return 0; 
+	return pack->pos;
+}
+
+cell AMX_NATIVE_CALL Dotnet_GetPacketLength(AMX * amx, cell * params)
+{
+	cell *pPack;
+	amx_GetAddr(amx,params[1],&pPack);
+	Packet* pack = (Packet*)*pPack;
+	if (pack == NULL) return 0;
+	return pack->Length;
+}
+
+cell AMX_NATIVE_CALL Dotnet_ReadInt32FromPacket(AMX * amx, cell * params)
+{
+	cell *pPack;//, *pInt;
+	amx_GetAddr(amx,params[1],&pPack);
+	//amx_GetAddr(amx,params[2],&pInt);
+	Packet* pack = (Packet*)*pPack;
+	if (pack == NULL) return 0;
+	//*pInt = pack->ReadInt32();
+	//return *pInt;
+	return pack->ReadInt32();
+}
+
+cell AMX_NATIVE_CALL Dotnet_ReadFloat32FromPacket(AMX * amx, cell * params)
+{
+	cell *pPack;//, *pFloat;
+	amx_GetAddr(amx,params[1],&pPack);
+	//amx_GetAddr(amx,params[2],&pFloat);
+	Packet* pack = (Packet*)*pPack;
+	if (pack == NULL) return 0;
+	float f = pack->ReadFloat32();
+	//*pFloat = amx_ftoc(f);
+	//return *pFloat;
+	return amx_ftoc(f);
+}
+
+cell AMX_NATIVE_CALL Dotnet_ReadStringFromPacket(AMX * amx, cell * params)
+{
+	cell *pPack, *pStr;//, *pLen;
+	amx_GetAddr(amx,params[1],&pPack);
+	amx_GetAddr(amx,params[2],&pStr);
+	//amx_GetAddr(amx,params[3],&pLen);
+	Packet* pack = (Packet*)*pPack;
+	if (pack == NULL) return 0;
+	
+	int strlen = pack->ReadUShort();
+	pack->pos -= 2;
+	amx_SetString(pStr, (char*)pack->pos, 0, 0, strlen);
+	pack->ReadString(NULL,0);
+	return strlen;
+}
+
+
+
+
+
+
 
 
 const AMX_NATIVE_INFO DotnetServerNatives[] = 
 {
 	{"Dotnet_NewPacket", Dotnet_NewPacket},
 	{"Dotnet_SendPacket", Dotnet_SendPacket},
+	{"Dotnet_DeletePacket", Dotnet_DeletePacket},
+	{"Dotnet_SetPacketPosition", Dotnet_SetPacketPosition},
+	{"Dotnet_GetPacketPosition", Dotnet_GetPacketPosition},
+	{"Dotnet_GetPacketLength", Dotnet_GetPacketLength},
+
 	{"Dotnet_AddInt32ToPacket", Dotnet_AddInt32ToPacket},
 	{"Dotnet_AddFloat32ToPacket", Dotnet_AddFloat32ToPacket},
 	{"Dotnet_AddCellStringToPacket", Dotnet_AddCellStringToPacket},
-	//{"Dotnet_AddPackedStringToPacket", Dotnet_AddStringToPacket},
+	//{"Dotnet_AddStringToPacket", Dotnet_AddStringToPacket},
+
+	{"Dotnet_ReadInt32FromPacket", Dotnet_ReadInt32FromPacket},
+	{"Dotnet_ReadFloat32FromPacket", Dotnet_ReadFloat32FromPacket},
+	{"Dotnet_ReadStringFromPacket", Dotnet_ReadStringFromPacket},
+
+
 	{NULL,NULL}
 };
+
+
 
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad( AMX *amx )
@@ -176,3 +280,4 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxUnload( AMX *amx )
 	}*/
 	return AMX_ERR_NONE;
 }
+

@@ -125,13 +125,13 @@ namespace Samp.API
             {
                 if (ID == -1) return 0;
                 FloatRef za = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetVehicleHealth", "iv", ID, za);
+                NativeFunctionRequestor.RequestFunctionWithArgs("GetVehicleHealth", "iv", ID, za);
                 return za.Value;
             }
             set
             {
                 if (ID == -1) return;
-                NativeFunctionRequestor.RequestFunction("SetVehicleHealth", "if", ID, value);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetVehicleHealth", "if", ID, value);
             }
         }
 
@@ -141,7 +141,7 @@ namespace Samp.API
             get
             {
                 if (ID == -1) return m_Model;
-                return NativeFunctionRequestor.RequestFunction("GetVehicleModel", "i",ID);
+                return NativeFunctionRequestor.RequestFunctionWithArgs("GetVehicleModel", "i",ID);
             }
             set
             {
@@ -157,13 +157,13 @@ namespace Samp.API
                 FloatRef x = new FloatRef(0.0F);
                 FloatRef y = new FloatRef(0.0F);
                 FloatRef z = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetVehiclePos", "ivvv", ID, x, y, z);
+                NativeFunctionRequestor.RequestFunctionWithArgs("GetVehiclePos", "ivvv", ID, x, y, z);
                 Vector3 vec = new Vector3(x.Value, y.Value, z.Value);
                 return vec;
             }
             set
             {
-                NativeFunctionRequestor.RequestFunction("SetVehiclePos", "ifff", ID, value.X, value.Y, value.Z);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetVehiclePos", "ifff", ID, value.X, value.Y, value.Z);
             }
         }
 
@@ -174,13 +174,13 @@ namespace Samp.API
             {
                 if (ID == -1) return m_ZAngle;
                 FloatRef za = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetVehicleZAngle", "iv", ID, za);
+                NativeFunctionRequestor.RequestFunctionWithArgs("GetVehicleZAngle", "iv", ID, za);
                 return za.Value;
             }
             set
             {
                 if (ID == -1) { m_ZAngle = value; return; }
-                NativeFunctionRequestor.RequestFunction("SetVehicleZAngle", "if", ID, value);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetVehicleZAngle", "if", ID, value);
             }
         }
 
@@ -191,19 +191,19 @@ namespace Samp.API
                 FloatRef x = new FloatRef(0.0F);
                 FloatRef y = new FloatRef(0.0F);
                 FloatRef z = new FloatRef(0.0F);
-                NativeFunctionRequestor.RequestFunction("GetVehicleVelocity", "ivvv", ID, x, y, z);
+                NativeFunctionRequestor.RequestFunctionWithArgs("GetVehicleVelocity", "ivvv", ID, x, y, z);
                 Vector3 vec = new Vector3(x.Value, y.Value, z.Value);
                 return vec;
             }
             set
             {
-                NativeFunctionRequestor.RequestFunction("SetVehicleVelocity", "ifff", ID, value.X, value.Y, value.Z);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetVehicleVelocity", "ifff", ID, value.X, value.Y, value.Z);
             }
         }
 
         public void RepairVehicle()
         {
-            NativeFunctionRequestor.RequestFunction("RepairVehicle", "i", ID);
+            NativeFunctionRequestor.RequestFunctionWithArgs("RepairVehicle", "i", ID);
         }
     }
 }
