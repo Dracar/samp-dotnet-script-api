@@ -270,7 +270,7 @@ namespace Samp.API
             {
                 if (_isConnected.ElapsedMS >= APIMain.CacheMS)
                 {
-                    _isConnected = System.Convert.ToBoolean(NativeFunctionRequestor.RequestFunction("IsPlayerConnected", "i", ID));
+                    _isConnected = System.Convert.ToBoolean(NativeFunctionRequestor.RequestFunctionWithArgs("IsPlayerConnected", "i", ID));
                 }
                 return _isConnected;
             }
@@ -287,7 +287,7 @@ namespace Samp.API
                 {
                     if (_money.ElapsedMS >= APIMain.CacheMS)
                     {
-                        _money = NativeFunctionRequestor.RequestFunction("GetPlayerMoney", "i", ID);
+                        _money = NativeFunctionRequestor.RequestFunctionWithArgs("GetPlayerMoney", "i", ID);
                     }
                     return _money;
                 }
@@ -298,8 +298,8 @@ namespace Samp.API
             }
             set
             {
-                NativeFunctionRequestor.RequestFunction("ResetPlayerMoney", "i", ID);
-                NativeFunctionRequestor.RequestFunction("GivePlayerMoney", "ii", ID, value);
+                NativeFunctionRequestor.RequestFunctionWithArgs("ResetPlayerMoney", "i", ID);
+                NativeFunctionRequestor.RequestFunctionWithArgs("GivePlayerMoney", "ii", ID, value);
                 _money = value;
             }
         }
@@ -313,14 +313,14 @@ namespace Samp.API
                 if (_health.ElapsedMS >= APIMain.CacheMS)
                 {
                     FloatRef z = new FloatRef(0.0F);
-                    NativeFunctionRequestor.RequestFunction("GetPlayerHealth", "iv", ID, z);
+                    NativeFunctionRequestor.RequestFunctionWithArgs("GetPlayerHealth", "iv", ID, z);
                     _health = z.Value;
                 }
                 return _health;
             }
             set
             {
-                NativeFunctionRequestor.RequestFunction("SetPlayerHealth", "if", ID, value);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetPlayerHealth", "if", ID, value);
             }
         }
 
@@ -331,14 +331,14 @@ namespace Samp.API
             {
                 if (_name.Length > 1) return _name; // does name ever change?
                 StringRef s = new StringRef("");
-                NativeFunctionRequestor.RequestFunction("GetPlayerName", "ipi", ID, s,32);
+                NativeFunctionRequestor.RequestFunctionWithArgs("GetPlayerName", "ipi", ID, s,32);
                 _name = s.Value;
                 return _name;
             }
             set
             {
                 _name = value;
-                NativeFunctionRequestor.RequestFunction("SetPlayerName", "is", ID, value);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetPlayerName", "is", ID, value);
             }
         }
 
@@ -350,7 +350,7 @@ namespace Samp.API
                 if (_zAngle.ElapsedMS >= APIMain.CacheMS)
                 {
                     FloatRef fr = new FloatRef(0.0F);
-                    NativeFunctionRequestor.RequestFunction("GetPlayerFacingAngle", "iv", ID, fr);
+                    NativeFunctionRequestor.RequestFunctionWithArgs("GetPlayerFacingAngle", "iv", ID, fr);
                     _zAngle = fr.Value;
                 }
                 return _zAngle;
@@ -358,7 +358,7 @@ namespace Samp.API
             set
             {
                 _zAngle = value;
-                NativeFunctionRequestor.RequestFunction("SetPlayerFacingAngle", "if", ID, value);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetPlayerFacingAngle", "if", ID, value);
             }
         }
 
@@ -373,7 +373,7 @@ namespace Samp.API
                     FloatRef x = new FloatRef(0.0F);
                     FloatRef y = new FloatRef(0.0F);
                     FloatRef z = new FloatRef(0.0F); ;
-                    NativeFunctionRequestor.RequestFunction("GetPlayerPos", "ivvv", ID, x, y, z);
+                    NativeFunctionRequestor.RequestFunctionWithArgs("GetPlayerPos", "ivvv", ID, x, y, z);
                     _pos = new Vector3(x.Value, y.Value, z.Value);
                 }
                 return _pos;
@@ -381,7 +381,7 @@ namespace Samp.API
             set
             {
                 _pos = value;
-                NativeFunctionRequestor.RequestFunction("SetPlayerPos", "ifff", ID, value.X, value.Y, value.Z);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetPlayerPos", "ifff", ID, value.X, value.Y, value.Z);
             }
         }
 
@@ -397,7 +397,7 @@ namespace Samp.API
                     FloatRef x = new FloatRef(0.0F);
                     FloatRef y = new FloatRef(0.0F);
                     FloatRef z = new FloatRef(0.0F); ;
-                    NativeFunctionRequestor.RequestFunction("GetPlayerVelocity", "ivvv", ID, x, y, z);
+                    NativeFunctionRequestor.RequestFunctionWithArgs("GetPlayerVelocity", "ivvv", ID, x, y, z);
                     _velocity = new Vector3(x.Value, y.Value, z.Value);
                 }
                 return _velocity;
@@ -405,7 +405,7 @@ namespace Samp.API
             set
             {
                 _velocity = value;
-                NativeFunctionRequestor.RequestFunction("SetPlayerVelocity", "ifff", ID, value.X, value.Y, value.Z);
+                NativeFunctionRequestor.RequestFunctionWithArgs("SetPlayerVelocity", "ifff", ID, value.X, value.Y, value.Z);
             }
 
         }
@@ -414,7 +414,7 @@ namespace Samp.API
         {
             get
             {
-                int vid = NativeFunctionRequestor.RequestFunction("GetPlayerVehicleID", "i", ID);
+                int vid = NativeFunctionRequestor.RequestFunctionWithArgs("GetPlayerVehicleID", "i", ID);
                 if (vid <= 0) return null;
                 return Vehicle.GetVehicleByID(vid);
             }
@@ -431,29 +431,29 @@ namespace Samp.API
 
         public void PutPlayerInVehicle(Vehicle vehicle, int seat)
         {
-            NativeFunctionRequestor.RequestFunction("PutPlayerInVehicle", "iii", ID, vehicle.ID, seat);
+            NativeFunctionRequestor.RequestFunctionWithArgs("PutPlayerInVehicle", "iii", ID, vehicle.ID, seat);
         }
 
         public void RemovePlayerFromVehicle()
         {
-            NativeFunctionRequestor.RequestFunction("RemovePlayerFromVehicle", "i", ID);
+            NativeFunctionRequestor.RequestFunctionWithArgs("RemovePlayerFromVehicle", "i", ID);
         }
 
         /*public Menu GetPlayerMenu()
         {
-            return Menu.GetMenuByID(NativeFunctionRequestor.RequestFunction("GetPlayerMenu", "i", ID));
+            return Menu.GetMenuByID(NativeFunctionRequestor.RequestFunctionWithArgs("GetPlayerMenu", "i", ID));
         }*/
 
 
         public void ShowDialog(Dialog d)
         {
-            NativeFunctionRequestor.RequestFunction("ShowPlayerDialog", "iiissss", ID, d.ID, d.Style, d.Name, d.Info, d.Button1, d.Button2);
+            NativeFunctionRequestor.RequestFunctionWithArgs("ShowPlayerDialog", "iiissss", ID, d.ID, d.Style, d.Name, d.Info, d.Button1, d.Button2);
             dialog = d;
         }
 
         public void ClearDialog()
         {
-            NativeFunctionRequestor.RequestFunction("ShowPlayerDialog", "iiissss", ID, -1, 0,"","","","");
+            NativeFunctionRequestor.RequestFunctionWithArgs("ShowPlayerDialog", "iiissss", ID, -1, 0,"","","","");
         }
 
         public Dialog GetPlayerDialog()
@@ -463,17 +463,17 @@ namespace Samp.API
 
         public void GameText(string text, int time, int style)
         {
-            NativeFunctionRequestor.RequestFunction("GameTextForPlayer", "isii", ID, text,time,style);
+            NativeFunctionRequestor.RequestFunctionWithArgs("GameTextForPlayer", "isii", ID, text,time,style);
         }
 
         public void ClientMessage(int colour, string message)
         {
-            NativeFunctionRequestor.RequestFunction("SendClientMessage", "iis", ID, colour,message);
+            NativeFunctionRequestor.RequestFunctionWithArgs("SendClientMessage", "iis", ID, colour,message);
         }
 
         public void AttachObject(GameObject obj,Vector3 offset, Vector3 rot)
         {
-            NativeFunctionRequestor.RequestFunction("AttachObjectToPlayer", "iiffffff", obj.ID, ID, offset.X, offset.Y, offset.Z, rot.X, rot.Y, rot.Z);
+            NativeFunctionRequestor.RequestFunctionWithArgs("AttachObjectToPlayer", "iiffffff", obj.ID, ID, offset.X, offset.Y, offset.Z, rot.X, rot.Y, rot.Z);
         }
 
         public bool IsPressingKey(int key)

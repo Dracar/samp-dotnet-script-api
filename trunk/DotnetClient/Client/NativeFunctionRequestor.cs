@@ -78,9 +78,9 @@ namespace Samp.Client
                 if (data[i] is StringRef) argsb[i] = (byte)'p';
             }
             string args = System.Text.Encoding.ASCII.GetString(argsb);
-            return RequestFunction(name,args,data);
+            return RequestFunctionWithArgs(name, args, data);
         }
-        public static int RequestFunction(string name, string args, params object[] data)
+        public static int RequestFunctionWithArgs(string name, string args, params object[] data)
         {
             NativeFunction func = new NativeFunction(name,args);
             for (int i = 0; i < data.Length; i++)
@@ -93,7 +93,7 @@ namespace Samp.Client
                 else if (data[i] is StringRef) func.Data.AddString((((StringRef)data[i]).Value));
             }
             NativeFunctionRequestor fr = new NativeFunctionRequestor(Client.Instance);
-            func = fr.RequestFunction(Server.Instance, func);
+            func = fr.RequestFunctionWithArgs(Server.Instance, func);
             if (func == null) { Log.Warning("Function request " + name + " failed."); return 0; }
 			func.Data.Pos = 0;
 			/*string dat = "data: ";
@@ -133,7 +133,7 @@ namespace Samp.Client
             _Client = client;
         }
 
-        public NativeFunction RequestFunction(Server server,NativeFunction function)
+        public NativeFunction RequestFunctionWithArgs(Server server,NativeFunction function)
         {
             request = function;
             response = null;

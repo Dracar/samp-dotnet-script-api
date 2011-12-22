@@ -46,7 +46,6 @@ void NativeFunctionProcessor::Init(AMX* pAMX)
 	script->Name = "NONAME"; // todo
 	AddAMXScript(script);
 	if (FindPublicFunction(script, "DotnetFSInit")) {logprintf("DotnetAMXScript %d",script); DotnetAMXScript = script;}
-	logprintf("scr: %d",DotnetAMXScript);
 }
 
 bool NativeFunctionProcessor::AddAMXScript(AMXScript* script)
@@ -70,7 +69,7 @@ AMXFunction* NativeFunctionProcessor::FindNativeFunction(AMXScript* script, char
 	int index=0;
 	amx_FindNative(script->Address, funcname,&index);
 	if (index == 2147483647) return NULL;
-	logprintf("FindNativeFunction %s found",funcname);
+	//logprintf("FindNativeFunction %s found",funcname);
 	AMXFunction* func = new AMXFunction();
 	func->Index = index;
 	func->IsNative = true;
@@ -86,10 +85,11 @@ AMXFunction* NativeFunctionProcessor::FindPublicFunction(char *funcname)
 	AMXFunction* ret = NULL;
 	for (int i=0;i<MAX_AMXSCRIPTS;i++)
 	{
+		//logprintf("searching script %d for public function %s.",i,funcname);
 		if (AMXScripts[i] == NULL) continue;
 		AMXScript* script = AMXScripts[i];
 		ret = FindPublicFunction(script,funcname);
-		if (ret != NULL) break;
+		if (ret != NULL) {; break;}
 	}
 	return ret;
 }
@@ -98,9 +98,8 @@ AMXFunction* NativeFunctionProcessor::FindPublicFunction(AMXScript* script, char
 {
 
 		int index=0;
-		amx_FindPublic(script->Address, funcname,&index);
-		if (index == 2147483647) return NULL;
-		Log::Debug("FindPublicFunction found");
+		if (amx_FindPublic(script->Address, funcname,&index) != AMX_ERR_NONE) return NULL;
+		if (index == 2147483647) return NULL;;
 		AMXFunction* func = new AMXFunction();
 		func->Index = index;
 		func->IsNative = false;
@@ -218,7 +217,7 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 	request->data->pos = 0;
 	
 	AMXFunction* func = GetFunctionByName(request->name);
-
+	//logprintf("funcrequest: %s - %s",request->name,request->params);
 	if (func == NULL) {sprintf("Dotnet Server: Warning: Failed to find native/public function $s.",request->name); return NULL;}
 
 	
@@ -226,7 +225,6 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 	cell *phys_addr[10]; // 6
 	args[0] = 4 * strlen(request->params);
 	int vars = 0;
-
 	for (unsigned int i=0;i<strlen(request->params);i++)
 	{
 		if (request->params[i] == 'i') 
@@ -278,7 +276,7 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
 				if (request->params[i] == 'v') {amx_Allot(func->Script->Address, 1, args + i+1, &phys_addr[vars++]); request->data->ReadInt32();}
 				if (request->params[i] == 'p') {amx_Allot(func->Script->Address, 1, args + i+1, &phys_addr[vars++]); request->data->ReadString(NULL,0);}
 			/*}
-			else
+			else // todo
 			{
 				//if (request->params[i] == 'v') amx_PushAddress(
 				if (request->params[i] == 'p') amx_Allot(func->Script->Address, 1, args + i+1, &phys_addr[vars++]);
@@ -324,100 +322,3 @@ FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequest(FunctionRequest
         
 	return request;
 }
-
-/*
-
-FunctionRequest* NativeFunctionProcessor::ProcessFunctionRequestOLD(FunctionRequest* request)
-{
-	if (!AMXInit) return NULL;
-	if (!request) return NULL;
-	request->data->pos = 0;
-
-	amx_function_t amxFunc = NULL;
-	sNativeFunction* sfunc = GetNativeByName(request->name);
-	if (sfunc != NULL) 
-	{
-		amxFunc = sfunc->func;
-		memcpy(request->params,sfunc->Args,strlen(sfunc->Args)+1);
-	}
-	if (amxFunc == NULL) 
-	{
-		logprintf("Searching for AMX function: %s.",request->name);
-		amxFunc = FindFunction(request->name);
-		//logprintf("Debug: params: %s, %d.",request->params,strlen(request->params));
-	}
-	
-	if (amxFunc == NULL)
-	{
-		logprintf("AMX Function '%s' not found!",request->name);
-		return NULL;
-	}
-
-
-
-	cell* args = (cell*)calloc(strlen(request->params)+1,4);
-	cell *phys_addr[10]; // 6
-	args[0] = 4 * strlen(request->params);
-	int vars = 0;
-
-	for (unsigned int i=0;i<strlen(request->params);i++)
-	{
-		if (request->params[i] == 'i') 
-		{
-			int q = request->data->ReadInt32();
-			args[i+1] = q;
-		} 
-		else if (request->params[i] == 'f') 
-		{
-			float f = request->data->ReadFloat32();
-			args[i+1] = amx_ftoc(f);
-		}
-		else if (request->params[i] == 's') 
-		{
-			unsigned short slen = request->data->ReadUShort();
-			request->data->pos -= 2;
-			char* str = (char*)calloc(slen,1);
-			str = request->data->ReadString(str,slen);
-			size_t len = strlen(str);
-			amx_Allot(__gpAMX, (int)(len + 1), args + i+1,&phys_addr[vars++]);
-			amx_SetString(phys_addr[vars-1], str, 0, 0, len + 1);
-			free(str);
-		}
-		else 
-		{
-			if (request->params[i] == 'v') amx_Allot(__gpAMX, 1, args + i+1, &phys_addr[vars++]); 
-			if (request->params[i] == 'p') amx_Allot(__gpAMX, 1, args + i+1, &phys_addr[vars++]); 
-		}
-	}
-	
-
-	request->response = amxFunc(__gpAMX, args);
-	
-	request->data->pos = 0;
-	request->data->Length = 0;
-	vars = 0;
-	for (unsigned int i=0;i<strlen(request->params);i++)
-	{
-		if (request->params[i] == 'v') request->data->AddInt32(*phys_addr[vars]);
-
-		if (request->params[i] == 'p')
-		{
-			char* str = (char*)calloc(32,1);
-			amx_GetString(str, phys_addr[vars], 0, 32); // todo: string length greater than 32
-			request->data->AddString(str);
-			free(str);
-		}
-
-		if ((request->params[i] == 's') || (request->params[i] == 'v') || (request->params[i] == 'p')) 
-		{ 
-			vars++; 
-			amx_Release(__gpAMX, args[i+1]);
-		}
-	}
-	
-	free(args);
-	//free(phys_addr);
-	request->data->pos = 0;
-        
-	return request;
-}*/

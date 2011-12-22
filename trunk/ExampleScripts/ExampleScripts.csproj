@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DialogExample.cs" />
-    <Compile Include="DotnetInteropExampleFS.cs" />
+    <Compile Include="DotnetFunctionInteropExample.cs" />
     <Compile Include="NativeFunctionExample.cs" />
     <Compile Include="PlayerCommandExample.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

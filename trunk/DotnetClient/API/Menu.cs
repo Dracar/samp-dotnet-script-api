@@ -85,7 +85,7 @@ namespace Samp.API
             func.data.AddInt32(column);
             func.data.AddString(title);
             NativeFunctionRequestor fr = new NativeFunctionRequestor(Client.Client.Instance);
-            fr.RequestFunction(Server.Instance, func);
+            fr.RequestFunctionWithArgs(Server.Instance, func);
         }
 
         public void ShowMenuForPlayer(Player player)
@@ -96,7 +96,7 @@ namespace Samp.API
             func.data.AddInt32(ID);
             func.data.AddInt32(player.ID);
             NativeFunctionRequestor fr = new NativeFunctionRequestor(Client.Client.Instance);
-            fr.RequestFunction(Server.Instance, func);
+            fr.RequestFunctionWithArgs(Server.Instance, func);
         }
          * */
     }

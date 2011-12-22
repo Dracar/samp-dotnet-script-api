@@ -86,17 +86,35 @@ namespace Samp.Client
 
             if (pak.Opcode == (byte)Packet.Opcodes.FunctionRequest)
             {
-                Log.Debug("function request received");
+                //Log.Debug("function request received");
                 string funcname = pak.ReadString();
                 string callbackname = pak.ReadString();
                 string paramtypes = pak.ReadString();
-                byte[] funcdata = pak.ReadData(pak.Length - pak.Pos);
+                //byte[] funcdata = pak.ReadData(pak.Length - pak.Pos);
+                object[] funcparams = new object[paramtypes.Length];
 
-                DataStream sdata = new DataStream();
-                sdata.Data = funcdata;
-                sdata.Length = (ushort)funcdata.Length;
-                Log.Debug("funcreq: " + funcname);
-                InternalEvents.FireOnFunctionRequestReceived(null, new OnFunctionRequestReceivedEventArgs(server, _Client, funcname,callbackname,paramtypes,sdata));
+                char[] cparamtypes = paramtypes.ToCharArray();
+                for (int i=0;i<paramtypes.Length;i++)
+                {
+                    switch (cparamtypes[i])
+                    {
+                        case 'i':
+                            funcparams[i] = pak.ReadInt32();
+                            break;
+                        case 'f':
+                            funcparams[i] = pak.ReadFloat32();
+                            break;
+                        case 's':
+                            funcparams[i] = pak.ReadString();
+                            break;
+                    }
+                }
+
+                //DataStream sdata = new DataStream();
+                //sdata.Data = funcdata;
+                //sdata.Length = (ushort)funcdata.Length;
+                //Log.Debug("funcreq: " + funcname);
+                InternalEvents.FireOnFunctionRequestReceived(null, new OnFunctionRequestReceivedEventArgs(server, _Client, funcname,callbackname,paramtypes,funcparams));
 
                 //return;
             }
