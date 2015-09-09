@@ -1,0 +1,1 @@
+Provide scripting API for SA:MP in any Dotnet language, via TCP interface.
